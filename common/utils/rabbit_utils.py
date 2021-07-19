@@ -39,6 +39,24 @@ class RabbitUtils:
         channel.queue_declare(queue=queue_name)
 
     @staticmethod
+    def setup_output_queue(channel, queue_name):
+        channel.queue_declare(queue=queue_name)
+
+    @staticmethod
     def setup_input_queue(channel, queue_name, callback):
         RabbitUtils.setup_queue(channel, queue_name)
-        channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue=queue_name, on_message_callback=callback)
+
+    @staticmethod
+    def send_to_queue(channel, queue_name, body, corr_id=None):
+        props = None
+        if corr_id:
+            props=pika.BasicProperties(correlation_id = corr_id)
+        channel.basic_publish(exchange='',
+            routing_key=queue_name,
+            properties=props,
+            body=body)
+
+    @staticmethod
+    def ack_from_method(channel, method):
+        channel.basic_ack(delivery_tag=method.delivery_tag)

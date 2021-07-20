@@ -17,3 +17,6 @@ class Persistor:
                 persisted_state.pop() # Me elimino posibles escrituras a medias (si me caigo en medio de una escritura)
 
             return persisted_state
+
+    def wipe(self):
+        with open(self.file_name, "w") as _: pass

@@ -1,12 +1,14 @@
+from common.utils.rabbit_utils import RabbitUtils
 from common.models.persistor import Persistor
 import logging
 import json
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 
 class CivilizationsGrouper:
-    def __init__(self, channel, output_queue_name, aggregator, persistance_file):
+    def __init__(self, id_grouper, channel, output_queue_name, aggregator, persistance_file):
         self.channel = channel
         self.output_queue_name = output_queue_name
+        self.id_grouper = id_grouper
         self.current_civs = {}
         self.persistance_file = persistance_file
         self.aggregator = aggregator
@@ -34,16 +36,26 @@ class CivilizationsGrouper:
 
     def received_sentinel(self):
         logging.info(f'CIVS GROUPER: Flushing all grouped civs')
+        
         self.flush_results()
         logging.info(f'CIV GROUPER: Sending sentinel...')
-        sentinel = BatchEncoderDecoder.create_encoded_sentinel()
-        self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=sentinel)
+
+        # sentinel = BatchEncoderDecoder.create_encoded_sentinel()
+        # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=sentinel)
 
     def flush_results(self):
         for civ,results in self.current_civs.items():
             logging.info(f'CIVS GROUPER: Announcing for civ {civ} the results {results}')
             serialized = BatchEncoderDecoder.encode_batch([civ, results])
+
+            self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"INICIO {self.id_grouper}")
             self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=serialized)
+            self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"FIN {self.id_grouper}")
+
+
+            self.persistor.persist("FINISH")
+            self.persistor.wipe()
+
 
 """
 [APPEND (mongol, id_fila_1), CHECK, APPEND (romanos, id_fila_2), CHECK, APPEND (romanos, id_fila_4)]

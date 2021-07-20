@@ -35,6 +35,7 @@ class ShardedGrouperController:
             if self.sentinel_tracker.count_and_reached_limit():
                 logging.info(f"SHARDED GROUPER {self.assigned_shard_key}: Received all sentinels! Flushing and shutting down...")
                 self.civ_grouper.received_sentinel()
+                RabbitUtils.ack_from_method(self.channel, method)
                 raise KeyboardInterrupt
             
             RabbitUtils.ack_from_method(self.channel, method)

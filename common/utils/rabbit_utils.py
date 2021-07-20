@@ -16,7 +16,7 @@ class RabbitUtils:
         else:
             channel.queue_declare(queue=queue_name, exclusive=False)
         channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=routing_key)
-        channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue=queue_name, on_message_callback=callback)
 
     @staticmethod
     def setup_output_direct_exchange(channel, exchange_name):
@@ -28,7 +28,7 @@ class RabbitUtils:
         result = channel.queue_declare(queue='', exclusive=True)
         queue_name = result.method.queue
         channel.queue_bind(exchange=exchange_name, queue=queue_name)
-        channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue=queue_name, on_message_callback=callback)
 
     @staticmethod
     def setup_fanout_exchange(channel, exchange_name):

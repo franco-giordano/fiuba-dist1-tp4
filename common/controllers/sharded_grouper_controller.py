@@ -36,9 +36,27 @@ class ShardedGrouperController:
                 logging.info(f"SHARDED GROUPER {self.assigned_shard_key}: Received all sentinels! Flushing and shutting down...")
                 self.civ_grouper.received_sentinel()
                 raise KeyboardInterrupt
+            
+            RabbitUtils.ack_from_method(self.channel, method)
             return
 
         joined_match = BatchEncoderDecoder.decode_bytes(body)
         logging.info(f'SHARDED GROUPER {self.assigned_shard_key}: Received joined match {body[:25]}...')
 
         self.civ_grouper.add_joined_match(joined_match)
+
+        # ACK a cola de input
+        RabbitUtils.ack_from_method(self.channel, method)
+
+"""
+[APPEND id_fila_1, CHECK, APPEND id_fila_2, CHECK, APPEND id_fila_2]
+
+{“mongol” : set(ids)} dict[mongol].add(id_fila_2)
+
+Leo una fila OK
+Proceso
+WRITE APPEND fila
+WRITE CHECK
+ACK input OK
+
+"""

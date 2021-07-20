@@ -131,6 +131,8 @@ services:
       - PYTHONUNBUFFERED=1
     networks:
       - testing_net
+    volumes:
+      - "./persistance/group-by-node-q3:/persistance"
   
   filter-matches-q4:
     stop_signal: SIGINT

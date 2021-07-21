@@ -32,6 +32,8 @@ class Query1Controller:
             logging.info(f"FILTER QUERY1: Received sentinel! Shutting down...")
             raise KeyboardInterrupt
 
+        # TODO: hacer la logica para que borre duplicados y mande al final
+
         batch = BatchEncoderDecoder.decode_bytes(body)
         logging.info(f"FILTER QUERY1: Received batch {body[:25]}...")
         passing = list(filter(self.filter.should_pass, batch))

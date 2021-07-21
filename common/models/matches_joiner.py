@@ -1,14 +1,30 @@
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from common.models.shard_key_getter import ShardKeyGetter
 import logging
+from common.models.persistor import Persistor
+import json
+from common.utils.rabbit_utils import RabbitUtils
 
 class MatchesJoiner:
-    def __init__(self, channel, output_exchange_name, next_reducers_amount, force_send_on_first_join=False):
+    def __init__(self, id_joiner, channel, output_exchange_name, next_reducers_amount, force_send_on_first_join=False, persistance_file):
         self.channel = channel
         self.output_exchange_name = output_exchange_name
+        self.id_joiner = id_joiner
         self.current_matches = {}
+        self.persistance_file = persistance_file
         self.shard_key_getter = ShardKeyGetter(next_reducers_amount)
         self.force_send_on_first_join = force_send_on_first_join
+
+
+        self.persistor = Persistor(self.persistance_file)
+
+        persisted_state = self.persistor.read()
+
+        for event in persisted_state:
+            if event != "CHECK":
+                player = json.loads(event)
+                self._add_player(player)
+                # TODO: Ver si es necesario agregar el match
 
     def add_players_batch(self, batch):
         for p in batch:
@@ -27,8 +43,12 @@ class MatchesJoiner:
         joined_info[0] = match
         self._send_or_store(joined_info, tkn)
 
+        # En algun momento aca hay que mandar el INICIO, pero no tengo idea cuando es el primer mensaje con esta logica
+
+
     def _send_or_store(self, joined_info, token):
         if self._should_send(joined_info):
+            
             shard_key = self.shard_key_getter.get_key_for_str(token)
             serialized = BatchEncoderDecoder.encode_batch(joined_info)
             logging.info(f'MATCHES JOINER: Found join for match {joined_info}, sending to shard key {shard_key}')
@@ -36,6 +56,9 @@ class MatchesJoiner:
             self._remove_info_if_possible(token)
         else:
             self.current_matches[token] = joined_info
+
+            self.persistor.persist(json.dumps(joined_info)) # TODO: Preguntar bien como guarda franco las cosas aca.
+
 
     def _remove_info_if_possible(self, token):
         if not self.force_send_on_first_join:
@@ -60,4 +83,9 @@ class MatchesJoiner:
         sentinel = BatchEncoderDecoder.create_encoded_sentinel()
         all_keys = self.shard_key_getter.generate_all_shard_keys()
         for key in all_keys:
-            self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=sentinel)
+            # TODO: preguntar que es esto, no se que hacen las shard keys aca
+            self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=f"FIN {self.id_joiner}")
+
+            self.persistor.persist("FINISH")
+            self.persistor.wipe()
+            # self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=sentinel)

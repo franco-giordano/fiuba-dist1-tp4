@@ -119,7 +119,9 @@ services:
       - PYTHONUNBUFFERED=1
     networks:
       - testing_net
-
+    volumes:
+      - "./persistance/join-nodes-q3:/persistance"
+  
   group-by-nodes-q3:
     stop_signal: SIGINT
     container_name: group-by-nodes-q3

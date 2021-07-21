@@ -36,7 +36,12 @@ class CivilizationsGrouper:
 
     def received_sentinel(self):
         logging.info(f'CIVS GROUPER: Flushing all grouped civs')
-        
+
+
+        if("FINISH" in self.persistor.read() or not self.persistor.read()):
+            # Ignorar el sentinel directamente
+            self.persistor.wipe()
+            return
         self.flush_results()
         logging.info(f'CIV GROUPER: Sending sentinel...')
 

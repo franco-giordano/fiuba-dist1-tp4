@@ -13,7 +13,7 @@ class Persistor:
         with open(self.file_name, "r") as f:
             persisted_state = f.readlines()    
 
-            while persisted_state and persisted_state[-1] not in ["CHECK", "FINISH"]:
+            while persisted_state and persisted_state[-1] != "CHECK":
                 persisted_state.pop() # Me elimino posibles escrituras a medias (si me caigo en medio de una escritura)
 
             return persisted_state

@@ -12,7 +12,8 @@ class ShardedJoinerController:
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
 
         # setup input exchange
-        RabbitUtils.setup_input_direct_exchange(self.channel, self.shard_exchange_name, assigned_shard_key, self._callback)
+        RabbitUtils.setup_input_direct_exchange(self.channel, self.shard_exchange_name, \
+            assigned_shard_key, self._callback, queue_name=None, auto_ack=False)
 
         # setup output exchange
         RabbitUtils.setup_output_direct_exchange(self.channel, output_exchange_name)

@@ -12,7 +12,8 @@ class ShardedGrouperController:
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
 
         # setup input exchange
-        RabbitUtils.setup_input_direct_exchange(self.channel, self.shard_exchange_name, assigned_shard_key, self._callback)
+        RabbitUtils.setup_input_direct_exchange(self.channel, self.shard_exchange_name, \
+            assigned_shard_key, self._callback, queue_name=None, auto_ack=False)
 
         # setup output queue
         RabbitUtils.setup_queue(self.channel, output_queue_name)

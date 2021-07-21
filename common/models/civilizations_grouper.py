@@ -19,9 +19,9 @@ class CivilizationsGrouper:
         for event in persisted_state:
             if event != "CHECK":
                 player = json.loads(event)
-                self.add_player(player)
+                self._add_player(player)
                 
-    def add_player(self, player):
+    def _add_player(self, player):
         civ = player['civ']
         prev_val = self.current_civs.get(civ, None)
         self.current_civs[civ] = self.aggregator.collapse(prev_val, player)

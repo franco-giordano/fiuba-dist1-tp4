@@ -10,8 +10,8 @@ class CliManagerController:
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
 
         # setup input queue
-        RabbitUtils.setup_input_queue(self.channel, self.requests_queue_name, self._callback)
-        RabbitUtils.setup_input_queue(self.channel, self.ping_queue_name, self._callback)
+        RabbitUtils.setup_input_queue(self.channel, self.requests_queue_name, self._callback, auto_ack=False)
+        RabbitUtils.setup_input_queue(self.channel, self.ping_queue_name, self._callback, auto_ack=False)
 
         # setup output exchange
         RabbitUtils.setup_output_queue(self.channel, self.replies_queue_name)

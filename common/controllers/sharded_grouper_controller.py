@@ -45,6 +45,10 @@ class ShardedGrouperController:
         joined_match = BatchEncoderDecoder.decode_bytes(body)
         logging.info(f'SHARDED GROUPER {self.assigned_shard_key}: Received joined match {body[:25]}...')
 
+        # TODO: hacer que soporte protocolo INICIO-FIN
+        #   hay que revisar como hacerlo, creo que no hace falta limpiar
+        #   las filas repetidas manualmente si llegan dos INICIO,
+        #   porque tratamos de no agregarla en primer lugar y listo
         self.civ_grouper.add_joined_match(joined_match)
 
         # ACK a cola de input

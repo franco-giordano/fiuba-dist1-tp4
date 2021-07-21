@@ -24,19 +24,18 @@ class CivilizationsGrouper:
     def _add_player(self, player):
         civ = player['civ']
         prev_val = self.current_civs.get(civ, None)
-        self.current_civs[civ] = self.aggregator.collapse(prev_val, player)
+        self.current_civs[civ] = self.aggregator.add(prev_val, player)
 
     def add_joined_match(self, joined_match):
         for player in joined_match[1]:
             civ = player['civ']
             prev_val = self.current_civs.get(civ, None)
-            self.current_civs[civ] = self.aggregator.collapse(prev_val, player)
+            self.current_civs[civ] = self.aggregator.add(prev_val, player)
 
             self.persistor.persist(json.dumps(player)) # Agrego APPEND
 
     def received_sentinel(self):
         logging.info(f'CIVS GROUPER: Flushing all grouped civs')
-
 
         if("FINISH" in self.persistor.read() or not self.persistor.read()):
             # Ignorar el sentinel directamente
@@ -49,17 +48,17 @@ class CivilizationsGrouper:
         # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=sentinel)
 
     def flush_results(self):
-        for civ,results in self.current_civs.items():
+        self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"INICIO {self.id_grouper}")
+        for civ, players_list in self.current_civs.items():
+            results = self.aggregator.collapse(players_list)
             logging.info(f'CIVS GROUPER: Announcing for civ {civ} the results {results}')
             serialized = BatchEncoderDecoder.encode_batch([civ, results])
-
-            self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"INICIO {self.id_grouper}")
             self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=serialized)
-            self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"FIN {self.id_grouper}")
 
+        self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"FIN {self.id_grouper}")
 
-            self.persistor.persist("FINISH")
-            self.persistor.wipe()
+        self.persistor.persist("FINISH")
+        self.persistor.wipe()
 
 
 """

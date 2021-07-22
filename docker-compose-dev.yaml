@@ -9,6 +9,9 @@ services:
       - MY_MASTER_ID=0
     networks:
       - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      
   
   master-1:
     stop_signal: SIGINT
@@ -19,6 +22,8 @@ services:
       - MY_MASTER_ID=1
     networks:
       - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   master-2:
     stop_signal: SIGINT
@@ -27,6 +32,18 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - MY_MASTER_ID=2
+    networks:
+      - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+
+  client-manager:
+    stop_signal: SIGINT
+    container_name: client-manager
+    image: client-manager:latest
+    environment:
+      - PYTHONUNBUFFERED=1
     networks:
       - testing_net
 

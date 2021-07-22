@@ -3,18 +3,14 @@ from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 import logging
 
 class CliManagerController:
-    def __init__(self, rabbit_ip, ping_queue_name, requests_queue_name, sys_status_filename):
-        self.ping_queue_name = ping_queue_name
+    def __init__(self, rabbit_ip, requests_queue_name, sys_status_filename):
+        # self.ping_queue_name = ping_queue_name
         self.requests_queue_name = requests_queue_name
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
 
         # setup input queue
         RabbitUtils.setup_input_queue(self.channel, self.requests_queue_name, self._callback, auto_ack=False)
-        RabbitUtils.setup_input_queue(self.channel, self.ping_queue_name, self._callback, auto_ack=False)
-
-        # setup output exchange
-        RabbitUtils.setup_output_queue(self.channel, self.replies_queue_name)
 
     def run(self):
         logging.info('CLIMANAGER: Waiting for messages. To exit press CTRL+C')

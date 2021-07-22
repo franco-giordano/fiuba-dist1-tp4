@@ -4,12 +4,10 @@ import logging
 
 
 class MasterController:
-    def __init__(self, rabbit_ip, master_comms_exchange, my_master_id, masters_amount, pings_fanout, pongs_queue):
+    def __init__(self, rabbit_ip, master_comms_exchange, my_master_id, masters_amount):
         self.master_comms_exchange = master_comms_exchange
         self.my_master_id = my_master_id
         self.masters_amount = masters_amount
-        self.pings_fanout = pings_fanout
-        self.pongs_queue = pongs_queue
         self.current_leader = -1
 
         self.connection, self.channel = MasterUtils.setup_connection_with_channel(

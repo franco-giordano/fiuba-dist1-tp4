@@ -48,10 +48,22 @@ class RabbitUtils:
         channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=auto_ack)
 
     @staticmethod
-    def send_to_queue(channel, queue_name, body, corr_id=None):
+    def setup_anonym_input_queue(channel, callback):
+        result = channel.queue_declare(queue='', exclusive=True)
+        callback_queue = result.method.queue
+
+        channel.basic_consume(
+            queue=callback_queue,
+            on_message_callback=callback,
+            auto_ack=True)
+
+        return callback_queue
+
+    @staticmethod
+    def send_to_queue(channel, queue_name, body, corr_id=None, reply_queue=None):
         props = None
         if corr_id:
-            props=pika.BasicProperties(correlation_id = corr_id)
+            props=pika.BasicProperties(correlation_id = corr_id, reply_to=reply_queue)
         channel.basic_publish(exchange='',
             routing_key=queue_name,
             properties=props,

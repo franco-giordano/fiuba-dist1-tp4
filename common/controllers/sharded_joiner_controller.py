@@ -12,7 +12,8 @@ class ShardedJoinerController:
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
 
         # setup input exchange
-        RabbitUtils.setup_input_direct_exchange(self.channel, self.shard_exchange_name, assigned_shard_key, self._callback)
+        RabbitUtils.setup_input_direct_exchange(self.channel, self.shard_exchange_name, \
+            assigned_shard_key, self._callback, queue_name=None, auto_ack=False)
 
         # setup output exchange
         RabbitUtils.setup_output_direct_exchange(self.channel, output_exchange_name)
@@ -35,7 +36,11 @@ class ShardedJoinerController:
             if self.sentinel_tracker.count_and_reached_limit():
                 logging.info(f"SHARDED JOINER {self.assigned_shard_key}: Received all sentinels! Flushing and shutting down...")
                 self.matches_joiner.received_sentinel()
+
+                RabbitUtils.ack_from_method(self.channel, method)
                 raise KeyboardInterrupt
+
+            RabbitUtils.ack_from_method(self.channel, method)
             return
 
         batch = BatchEncoderDecoder.decode_bytes(body)
@@ -47,3 +52,5 @@ class ShardedJoinerController:
         elif BatchEncoderDecoder.is_matches_batch(batch):
             self.matches_joiner.add_matches_batch(batch)
             logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Added matches batch {body[:25]}...')
+
+        RabbitUtils.ack_from_method(self.channel, method)

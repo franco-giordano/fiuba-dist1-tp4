@@ -1,196 +1,42 @@
 version: '3'
 services:
-  fanout-matches:
+  master-0:
     stop_signal: SIGINT
-    container_name: fanout-matches
-    image: fanout-matches:latest
+    container_name: master-0
+    image: master:latest
     environment:
       - PYTHONUNBUFFERED=1
+      - MY_MASTER_ID=0
     networks:
       - testing_net
-
-  fanout-players:
-    stop_signal: SIGINT
-    container_name: fanout-players
-    image: fanout-players:latest
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  filter-q1:
-    stop_signal: SIGINT
-    container_name: filter-q1
-    image: filter-q1:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - fanout-matches
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  exchanger-q2:
-    stop_signal: SIGINT
-    container_name: exchanger-q2
-    image: exchanger:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - fanout-players
-    environment:
-      - PYTHONUNBUFFERED=1
-      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q2
-      - NEXT_REDUCERS_AMOUNT=5
-      - BATCH_SIZE=10000
-    networks:
-      - testing_net
-
-  exchanger-q3:
-    stop_signal: SIGINT
-    container_name: exchanger-q3
-    image: exchanger:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - fanout-players
-    environment:
-      - PYTHONUNBUFFERED=1
-      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q3
-      - REDUCERS_AMOUNT=5
-      - BATCH_SIZE=10000
-    networks:
-      - testing_net
-
-  group-by-nodes-q2:
-    stop_signal: SIGINT
-    container_name: group-by-nodes-q2
-    image: group-by-nodes-q2:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - exchanger-q2
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  filter-by-ladder:
-    stop_signal: SIGINT
-    container_name: filter-by-ladder
-    image: filter-by-ladder:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - fanout-matches
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  filter-matches-q3:
-    stop_signal: SIGINT
-    container_name: filter-matches-q3
-    image: filter-matches-q3:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - filter-by-ladder
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  filter-pro-players-q4:
-    stop_signal: SIGINT
-    container_name: filter-pro-players-q4
-    image: filter-pro-players-q4:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - fanout-players
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  join-nodes-q3:
-    stop_signal: SIGINT
-    container_name: join-nodes-q3
-    image: join-nodes-q3:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - filter-matches-q3
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  group-by-nodes-q3:
-    stop_signal: SIGINT
-    container_name: group-by-nodes-q3
-    image: group-by-nodes-q3:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - join-nodes-q3
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      
   
-  filter-matches-q4:
+  master-1:
     stop_signal: SIGINT
-    container_name: filter-matches-q4
-    image: filter-matches-q4:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - filter-by-ladder
+    container_name: master-1
+    image: master:latest
     environment:
       - PYTHONUNBUFFERED=1
+      - MY_MASTER_ID=1
     networks:
       - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
-  join-nodes-q4:
+  master-2:
     stop_signal: SIGINT
-    container_name: join-nodes-q4
-    image: join-nodes-q4:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - filter-matches-q4
+    container_name: master-2
+    image: master:latest
     environment:
       - PYTHONUNBUFFERED=1
+      - MY_MASTER_ID=2
     networks:
       - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
-  group-by-nodes-q4:
-    stop_signal: SIGINT
-    container_name: group-by-nodes-q4
-    image: group-by-nodes-q4:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - join-nodes-q4
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  final-accumulator-q3:
-    stop_signal: SIGINT
-    container_name: final-accumulator-q3
-    image: final-accumulator-q3:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - group-by-nodes-q3
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-
-  final-accumulator-q4:
-    stop_signal: SIGINT
-    container_name: final-accumulator-q4
-    image: final-accumulator-q4:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - group-by-nodes-q4
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
 
   client-manager:
     stop_signal: SIGINT

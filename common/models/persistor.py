@@ -18,5 +18,10 @@ class Persistor:
 
             return persisted_state
 
+    def update(self, text):
+        with open(self.file_name, "w") as f:
+            f.write(f"{text}\n")
+            f.write("CHECK\n")
+
     def wipe(self):
         with open(self.file_name, "w") as _: pass

@@ -10,7 +10,7 @@ class ApiPacketsEncoder:
         return ObjectEncoderDecoder.decode_bytes(bytes_recv)
 
     @classmethod
-    def create_ok_to_upload(cls, uuid):
+    def create_ok_to_upload(cls, uuid): # TODO: Usar quizas estos metodos para el cli mngr
         return cls._encode_pkt({'uuid': uuid, 'msg': 'OK_TO_UPLOAD'})
 
     @classmethod

@@ -6,12 +6,14 @@ def main():
 	config_params = setup('config.ini',
 		{'REQUESTS_QUEUE_NAME': False,
 		'RABBIT_IP': False,
-		'SYS_STATUS_FILENAME': False})
+		'SYS_STATUS_FILENAME': False,
+		'LAST_ROW_FILENAME': False})
 	rabbit_ip = config_params['RABBIT_IP']
 	requests_queue_name = config_params['REQUESTS_QUEUE_NAME']
 	sys_status_filename = config_params['SYS_STATUS_FILENAME']
+	last_row_filename = config_params['LAST_ROW_FILENAME']
 
-	controller = CliManagerController(rabbit_ip, requests_queue_name, sys_status_filename)
+	controller = CliManagerController(rabbit_ip, requests_queue_name, sys_status_filename, last_row_filename)
 	controller.run()
 
 if __name__== "__main__":

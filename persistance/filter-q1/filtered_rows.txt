@@ -1,0 +1,28 @@
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 10283}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 10283}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 10283}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK
+b'{"token": "5wxASJNkADnecj2w", "winning_team": 2, "mirror": false, "ladder": "RM_1v1", "patch": 40874, "average_rating": 2032, "map": "arabia", "map_size": "tiny", "num_players": 2, "server": "eastus", "duration": 1028123213}'
+CHECK

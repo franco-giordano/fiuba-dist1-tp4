@@ -37,7 +37,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-
   client-manager:
     stop_signal: SIGINT
     container_name: client-manager
@@ -46,6 +45,18 @@ services:
       - PYTHONUNBUFFERED=1
     networks:
       - testing_net
+
+  filter-q1:
+    stop_signal: SIGINT
+    container_name: filter-q1
+    image: filter-q1:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/filter-q1:/persistance"
 
 networks:
   testing_net:

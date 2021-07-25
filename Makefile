@@ -7,7 +7,7 @@ all:
 
 docker-image:
 	docker build -f ./client-manager/Dockerfile -t "client-manager:latest" .
-	# docker build -f ./filter-q1/Dockerfile -t "filter-q1:latest" .
+	docker build -f ./filter-q1/Dockerfile -t "filter-q1:latest" .
 	# docker build -f ./fanout-matches/Dockerfile -t "fanout-matches:latest" .
 	# docker build -f ./fanout-players/Dockerfile -t "fanout-players:latest" .
 	# docker build -f ./exchanger/Dockerfile -t "exchanger:latest" .
@@ -50,3 +50,7 @@ nodes-down:
 nodes-logs:
 	docker-compose -f docker-compose-dev.yaml logs -f
 .PHONY: nodes-logs
+
+nodes-restart:
+	make nodes-down; make nodes-up && make nodes-logs
+.PHONY: nodes-restart

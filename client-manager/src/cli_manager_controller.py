@@ -18,9 +18,7 @@ class CliManagerController:
         self.requests_queue_name = requests_queue_name
         
         self.persistor_state = Persistor(sys_status_filename)
-        # self.persistor_last_row = Persistor(last_row_filename)
         self.system_state = self.reload_persisted_state() # (container_name | 'FREE')
-        # self.last_row = self.reload_last_persisted_row()
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
         self.request_queue = RabbitUtils.setup_queue(self.channel, self.requests_queue_name)

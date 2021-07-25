@@ -50,7 +50,8 @@ class PingsController:
         """
         while True:
             with self.generations_lock:
-                nodes_to_restart = list(self.generations[self.act_generation ^ 1].keys())
+                nodes_to_restart = list(
+                    self.generations[self.act_generation ^ 1].keys())
 
                 for node_name in nodes_to_restart:
                     self._restart_node(node_name)

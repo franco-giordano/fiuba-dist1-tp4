@@ -9,7 +9,6 @@ def main():
                           'RABBIT_IP': False,
                           'MY_MASTER_ID': True,
                           'MASTERS_AMOUNT': True,
-                          'PINGS_FANOUT': False,
                           'PONGS_QUEUE': False,
                           'MASTER_COMMS_EXCH': False,
                           'NODES_LIST': False})
@@ -17,13 +16,12 @@ def main():
     master_comms = config_params['MASTER_COMMS_EXCH']
     my_master_id = config_params['MY_MASTER_ID']
     masters_amount = config_params['MASTERS_AMOUNT']
-    # pings_fanout = config_params['PINGS_FANOUT']
 
     controller = MasterController(
         rabbit_ip, master_comms, my_master_id, masters_amount)
 
     pings_proc = Process(target=pings_init, args=(config_params,))
-    if my_master_id==0:
+    if my_master_id == 0:
         pings_proc.start()
 
     controller.run()

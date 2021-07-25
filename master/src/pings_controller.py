@@ -13,6 +13,7 @@ class PingsController:
     def __init__(self, rabbit_ip, pongs_queue, nodes_list):
         self.pongs_queue = pongs_queue
         self.timeout_interval = 5  # segundos
+        self.nodes_list = nodes_list
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(
             rabbit_ip)
@@ -27,7 +28,7 @@ class PingsController:
         self.healthcheck_thread = Thread(target=self.nodes_healthcheck)
 
     def run(self):
-
+        self._gens_init()
         self.healthcheck_thread.start()
 
         logging.info('PINGS: Waiting for messages. To exit press CTRL+C')
@@ -49,7 +50,7 @@ class PingsController:
         """
         while True:
             with self.generations_lock:
-                nodes_to_restart = self.generations[self.act_generation ^ 1].keys()
+                nodes_to_restart = list(self.generations[self.act_generation ^ 1].keys())
 
                 for node_name in nodes_to_restart:
                     self._restart_node(node_name)
@@ -69,6 +70,7 @@ class PingsController:
 
     def _pongs_callback(self, ch, method, properties, body):
         node_name = ObjectEncoderDecoder.decode_bytes(body)
+        logging.info(f'PINGS: Recibido {body}')
         self._restart_timer(node_name)
 
     def _restart_node(self, node_name):
@@ -89,3 +91,7 @@ class PingsController:
             # Borro de la vieja generación
             if node_name in self.generations[self.act_generation ^ 1]:
                 del self.generations[self.generations ^ 1][node_name]
+
+    def _gens_init(self):
+        for n in self.nodes_list:
+            self.generations[self.act_generation][n] = datetime.now()

@@ -40,6 +40,7 @@ class PingsController:
             self.healthcheck_thread.join()
             self.connection.close()
 
+    # runs threaded
     def nodes_healthcheck(self):
         """
         Ciclo por el diccionario viejo y hago el chequeo si queda alguien.
@@ -49,23 +50,22 @@ class PingsController:
         while True:
             with self.generations_lock:
                 nodes_to_restart = self.generations[self.act_generation ^ 1].keys()
-                
+
                 for node_name in nodes_to_restart:
                     self._restart_node(node_name)
-                    
+
                     del self.generations[self.act_generation ^ 1][node_name]
-                    self.generations[self.act_generation][node_name] = datetime.now() # Lo levanto y le asigno el timestamp actual
+                    # Lo levanto y le asigno el timestamp actual
+                    self.generations[self.act_generation][node_name] = datetime.now()
 
+                self.act_generation ^= 1  # Paso todo lo de la generación nueva a vieja
 
-                self.act_generation ^= 1 # Paso todo lo de la generación nueva a vieja
-            
             sleep(self.timeout_interval)
-            
 
-    def _time_up(self, node_name):
-        # node down
-        self._restart_node(node_name)
-        self._restart_timer(node_name)
+    # def _time_up(self, node_name):
+    #     # node down
+    #     self._restart_node(node_name)
+    #     self._restart_timer(node_name)
 
     def _pongs_callback(self, ch, method, properties, body):
         node_name = ObjectEncoderDecoder.decode_bytes(body)
@@ -86,5 +86,6 @@ class PingsController:
         with self.generations_lock:
             self.generations[self.act_generation][node_name] = datetime.now()
 
-            if node_name in self.generations[self.act_generation ^ 1]: # Borro de la vieja generación
+            # Borro de la vieja generación
+            if node_name in self.generations[self.act_generation ^ 1]:
                 del self.generations[self.generations ^ 1][node_name]

@@ -4,6 +4,7 @@ import signal
 import logging
 from common.utils.master_utils import MasterUtils
 from src.pings_controller import PingsController
+from src.internal_monitor import InternalMonitor
 from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
 from multiprocessing import Process
 from datetime import datetime
@@ -15,7 +16,7 @@ TIMEOUT_ELECTION = TIMEOUT_COORDINATOR = 5
 
 class MasterController:
     def __init__(self, rabbit_ip, master_comms_exchange, my_master_id, masters_amount,
-                 pongs_queue, node_list, log_filename=None):
+                 pongs_queue, node_list, log_filename):
         self.master_comms_exchange = master_comms_exchange
         self.my_master_id = my_master_id
         self.masters_amount = masters_amount
@@ -24,16 +25,22 @@ class MasterController:
         self.pongs_queue = pongs_queue
         self.node_list = node_list
 
+
         self.election_timer = None  # None: No hay elección transurriendo
         self.election_timer_lock = Lock()
-        self.election_timer_check_thread = Thread(target=self.election_timer_check)
-        
-        self.coordinator_timer = None  # None: No hay elección transurriendo
+        self.election_timer_check_thread = Thread(
+            target=self.election_timer_check)
+
+        # None: No estoy esperando un msj [[CCORD]]
+        self.coordinator_timer = None
         self.coordinator_timer_lock = Lock()
-        self.coordinator_timer_check_thread = Thread(target=self.coordinator_timer_check)
+        self.coordinator_timer_check_thread = Thread(
+            target=self.coordinator_timer_check)
 
         self.connection, self.channel = MasterUtils.setup_connection_with_channel(
             rabbit_ip)
+
+        self.internal_monitor = InternalMonitor(self.channel)
 
         # Seteo heartbeat para todos
         heartbeat = HeartBeat(
@@ -53,14 +60,6 @@ class MasterController:
 
         logging.info('MASTER: Waiting for messages. To exit press CTRL+C')
         try:
-            # para testear mando un msg incial
-            MasterUtils.send_to_all_masters(
-                self.channel,
-                self.master_comms_exchange,
-                self.my_master_id,
-                f'primer hola desde {self.my_master_id}',
-                self.masters_amount)
-
             self.channel.start_consuming()
         except KeyboardInterrupt:
             logging.warning('MASTER: ######### Received Ctrl+C! Stopping...')
@@ -74,42 +73,34 @@ class MasterController:
         self.current_leader = -1
 
         if self.my_master_id < self.master_amount - 1:  # No soy el mas grande, llamo a una eleccion
-            election_msg = ObjectEncoderDecoder.encode_obj(
-                {"type": "[[ELECTION]]", "id": self.my_master_id})
-            MasterUtils.send_to_greater_ids(self.channel, self.master_comms_exchange, self.my_master_id,
-                                            election_msg, self.masters_amount)
-
+            self._forward_election()
         else:  # Ya soy el mas grande, me apropio del liderazgo
             coordinator_msg = ObjectEncoderDecoder.encode_obj(
                 {"type": "[[COORDINATOR]]", "id": self.my_master_id})
             MasterUtils.send_to_greater_ids(self.channel, self.master_comms_exchange, self.my_master_id,
                                             coordinator_msg, self.masters_amount)
 
-        self.channel.start_consuming()
+        # self.channel.start_consuming()
 
     def election_timer_check(self):
         while True:
             with self.election_timer_lock:
                 if self.election_timer is not None:
-                    elapsed_seconds = (datetime.now() - self.election_timer).seconds
+                    elapsed_seconds = (
+                        datetime.now() - self.election_timer).seconds
                     if elapsed_seconds > TIMEOUT_ELECTION:
-                        coordinator_msg = ObjectEncoderDecoder.encode_obj(
-                            {"type": "[[COORDINATOR]]", "id": self.my_master_id})
-                        MasterUtils.send_to_all_masters(self.channel, self.master_comms_exchange,
-                                                        self.my_master_id, coordinator_msg, self.master_amount)
+                        self._election_time_up()
 
-            sleep(TIMEOUT_ELECTION/2)  
+            sleep(TIMEOUT_ELECTION/2)
 
     def coordinator_timer_check(self):
         while True:
             with self.coordinator_timer_lock:
                 if self.coordinator_timer is not None:
-                    elapsed_seconds = (datetime.now() - self.coordinator_timer).seconds
+                    elapsed_seconds = (
+                        datetime.now() - self.coordinator_timer).seconds
                     if elapsed_seconds > TIMEOUT_COORDINATOR:
-                        election_msg = ObjectEncoderDecoder.encode_obj(
-                            {"type": "[[ELECTION]]", "id": self.my_master_id})
-                        MasterUtils.send_to_greater_ids(self.channel, self.master_comms_exchange,
-                                                        self.my_master_id, election_msg, self.master_amount)
+                        self._forward_election()
 
             sleep(TIMEOUT_COORDINATOR/2)  # 2 segundos
 
@@ -125,10 +116,7 @@ class MasterController:
             MasterUtils.send_alive_bully_msg(
                 self.channel, self.master_comms_exchange, self.my_master_id, event["id"])
 
-            election_msg = ObjectEncoderDecoder.encode_obj(
-                {"type": "[[ELECTION]]"})
-            MasterUtils.send_to_greater_ids(self.channel, self.master_comms_exchange, self.my_master_id,
-                                            election_msg, self.masters_amount)
+            self._forward_election()
 
             with self.election_timer_lock:
                 self.election_timer = datetime.now()
@@ -152,17 +140,33 @@ class MasterController:
             with self.coordinator_timer_lock:
                 self.coordinator_timer = None
 
+            self.internal_monitor.start_monitoring_leader(new_leader)
+
+        """
+        LIDER:
+        - mande heartbeats a los slaves por el exchange de mastercomms
+            en nuevo thread
+        SLAVES:
+        - monitorear heartbeats que vengan por mastercomms, sino llamar eleccion
+            con timers, no hace falta thread
+        """
         # IF LIDER VIVO
-        #  reseteo el timer del lider
+        if event["type"] == "[[LEADER_ALIVE]]":
+            # assert(event["id"] == self.current_leader)
+
+            #  reseteo el timer del lider
+            self.internal_monitor.reset_leader_timer()
 
         logging.info(f"MASTER-{self.my_master_id}: Received msg '{body}'")
 
-    def _time_up(self, ):
+    def _election_time_up(self):
         """ Se invoca cuando envio [[ELECTION]] y no recibo respuesta, significa que soy el coordinator """
 
         # Se ejecutara esto si el timer vence
-        pings_process = Process(target=self.pings_init)
-        pings_process.start()
+        self.pings_process = Process(target=self.pings_init)
+        self.pings_process.start()
+
+        self.internal_monitor.start_sending_heartbeats() # to slaves
 
         MasterUtils.send_to_all_masters(self.channel, self.master_comms_exchange, self.my_master_id,
                                         ObjectEncoderDecoder.encode_obj(
@@ -173,3 +177,9 @@ class MasterController:
         controller = PingsController(
             self.my_master_id, self.rabbit_ip, self.pongs_queue, self.nodes_list, self.log_filename)
         controller.run()
+
+    def _forward_election(self):
+        election_msg = ObjectEncoderDecoder.encode_obj(
+            {"type": "[[ELECTION]]", "id": self.my_master_id})
+        MasterUtils.send_to_greater_ids(self.channel, self.master_comms_exchange,
+                                        self.my_master_id, election_msg, self.master_amount)

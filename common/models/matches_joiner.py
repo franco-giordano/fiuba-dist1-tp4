@@ -21,7 +21,7 @@ class MatchesJoiner:
         persisted_state = self.persistor.read()
 
         for event in persisted_state:
-            if event != "CHECK":
+            if event != Persistor.CHECK_GUARD:
                 obj = json.loads(event)
                 if self._is_player_obj(obj):
                     self._add_player(obj)

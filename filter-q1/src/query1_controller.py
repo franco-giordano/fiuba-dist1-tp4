@@ -30,9 +30,11 @@ class Query1Controller:
         persisted_state = self.persistor.read()
 
         for event in persisted_state:
-            if event != "CHECK":
-                # match = MatchEncoderDecoder.decode_bytes(event)
-                self._preprocess(event)
+            if event != Persistor.CHECK_GUARD:
+                match = MatchEncoderDecoder.decode_str(event)
+                self._preprocess(match)
+        logging.info(f"FILTER QUERY1: rebuilt set now is {self.filtered_rows}")
+
 
     def run(self):
         logging.info(
@@ -51,10 +53,9 @@ class Query1Controller:
             # mandar a cola final
             self.channel.basic_publish(
                 exchange='', routing_key=self.output_queue_name, body=f"INICIO")
-            for match in self.filtered_rows:
-                serialized = MatchEncoderDecoder.encode_match(match)
+            for serialized_match in self.filtered_rows:
                 self.channel.basic_publish(
-                    exchange='', routing_key=self.output_queue_name, body=serialized)
+                    exchange='', routing_key=self.output_queue_name, body=serialized_match)
             self.channel.basic_publish(
                 exchange='', routing_key=self.output_queue_name, body=f"FIN")
             raise KeyboardInterrupt
@@ -62,27 +63,27 @@ class Query1Controller:
         # TODO: hacer la logica para que borre duplicados y mande al final
 
         batch = BatchEncoderDecoder.decode_bytes(body)
-        logging.info(f"FILTER QUERY1: Received batch {body[:25]}...")
         passing = list(filter(self.filter.should_pass, batch))
 
         if passing:
             for match in passing:
-                self.filtered_rows.add(MatchEncoderDecoder.encode_match(match))
+                self.filtered_rows.add(
+                    MatchEncoderDecoder.encode_match_str(match))
+
+                logging.info(f"FILTER QUERY1: set now is {self.filtered_rows}")
 
                 # persistir
-                self.persistor.persist(MatchEncoderDecoder.encode_match(match).decode())
-
-                logging.info(f"FILTER QUERY1: set ahora es {self.filtered_rows}")
-
+                self.persistor.persist(
+                    MatchEncoderDecoder.encode_match_str(match))
 
                 # ack
                 RabbitUtils.ack_from_method(self.channel, method)
 
-    def _preprocess(self, serialized_match):
-        can_pass = self.filter.should_pass(MatchEncoderDecoder.decode_bytes(serialized_match))
+    def _preprocess(self, match):
+        can_pass = self.filter.should_pass(match)
 
         if can_pass:
-            self.filtered_rows.add(serialized_match)
+            self.filtered_rows.add(MatchEncoderDecoder.encode_match_str(match))
 
 # old:
 

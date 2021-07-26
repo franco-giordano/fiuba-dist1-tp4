@@ -4,7 +4,7 @@ import logging
 
 
 class MasterController:
-    def __init__(self, rabbit_ip, master_comms_exchange, my_master_id, masters_amount, log_filename):
+    def __init__(self, rabbit_ip, master_comms_exchange, my_master_id, masters_amount, log_filename=None):
         self.master_comms_exchange = master_comms_exchange
         self.my_master_id = my_master_id
         self.masters_amount = masters_amount

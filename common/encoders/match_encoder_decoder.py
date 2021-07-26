@@ -10,6 +10,14 @@ class MatchEncoderDecoder:
         return ObjectEncoderDecoder.encode_obj(dict_recv)
 
     @staticmethod
+    def decode_str(str_recv: str) -> dict:
+        return ObjectEncoderDecoder.decode_str(str_recv)
+
+    @staticmethod
+    def encode_match_str(dict_recv: dict) -> str:
+        return ObjectEncoderDecoder.encode_obj_str(dict_recv)
+
+    @staticmethod
     def parse_dict(dict_recv: dict) -> dict:
         shallow_copy = dict_recv.copy()
         shallow_copy['winning_team'] = int(shallow_copy['winning_team'])

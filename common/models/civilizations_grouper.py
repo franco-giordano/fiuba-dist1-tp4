@@ -17,7 +17,7 @@ class CivilizationsGrouper:
         persisted_state = self.persistor.read() 
 
         for event in persisted_state:
-            if event != "CHECK":
+            if event != Persistor.CHECK_GUARD:
                 player = json.loads(event)
                 self._add_player(player)
                 

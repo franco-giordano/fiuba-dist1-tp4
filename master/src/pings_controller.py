@@ -98,5 +98,8 @@ class PingsController:
                 del self.generations[self.generations ^ 1][node_name]
 
     def _gens_init(self):
+        if self.nodes_list == ['']: # empty nodes list
+            return
+
         for n in self.nodes_list:
             self.generations[self.act_generation][n] = datetime.now()

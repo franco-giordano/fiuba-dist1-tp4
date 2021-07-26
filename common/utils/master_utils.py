@@ -1,5 +1,5 @@
 import pika
-
+from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
 
 class MasterUtils:
     @staticmethod
@@ -31,6 +31,22 @@ class MasterUtils:
                     exchange=exchange_name,
                     routing_key=f"from_{my_master_id}.to_{i}",
                     body=body)
+
+    @staticmethod
+    def send_to_greater_ids(channel, exchange_name, my_master_id, body, masters_amount):
+        for i in range(my_master_id+1, masters_amount): # nodes with id greater than mine
+            channel.basic_publish(
+                exchange=exchange_name,
+                routing_key=f"from_{my_master_id}.to_{i}",
+                body=body)
+
+    @staticmethod
+    def send_alive_bully_msg(channel, exchange_name, my_master_id, dest_master_id):
+        channel.basic_publish(
+            exchange=exchange_name,
+            routing_key=f"from_{my_master_id}.to_{dest_master_id}",
+            body=ObjectEncoderDecoder.encode_obj({"type": "[[ALIVE]]", "id": my_master_id}))
+
 
     @staticmethod
     def ack_from_method(channel, method):

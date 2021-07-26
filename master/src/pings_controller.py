@@ -9,7 +9,8 @@ from time import sleep
 
 
 class PingsController:
-    def __init__(self, rabbit_ip, pongs_queue, nodes_list, log_filename):
+    def __init__(self, rabbit_ip, my_master_id, pongs_queue, nodes_list, log_filename):
+        self.my_master_id = my_master_id
         self.pongs_queue = pongs_queue
         self.timeout_interval = 5  # segundos
         self.nodes_list = nodes_list
@@ -59,22 +60,17 @@ class PingsController:
 
                     del self.generations[self.act_generation ^ 1][node_name]
                     # Lo levanto y le asigno el timestamp actual
-                    self.generations[self.act_generation][node_name] = datetime.now(
-                    )
+                    self.generations[self.act_generation][node_name] = datetime.now()
 
                 self.act_generation ^= 1  # Paso todo lo de la generación nueva a vieja
 
             sleep(self.timeout_interval)
 
-    # def _time_up(self, node_name):
-    #     # node down
-    #     self._restart_node(node_name)
-    #     self._restart_timer(node_name)
-
     def _pongs_callback(self, ch, method, properties, body):
         node_name = ObjectEncoderDecoder.decode_bytes(body)
         logging.info(f'PINGS: Recibido {body}')
-        self._restart_timer(node_name)
+        if node_name != f"master-{self.my_master_id}":
+            self._restart_timer(node_name)
 
     def _restart_node(self, node_name):
         result = subprocess.run(['docker', 'stop', node_name],
@@ -100,6 +96,7 @@ class PingsController:
     def _gens_init(self):
         if self.nodes_list == ['']: # empty nodes list
             return
-
+            
         for n in self.nodes_list:
-            self.generations[self.act_generation][n] = datetime.now()
+            if n != f"master-{self.my_master_id}":
+                self.generations[self.act_generation][n] = datetime.now()

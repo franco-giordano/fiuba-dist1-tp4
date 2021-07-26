@@ -11,11 +11,14 @@ def main():
                           'MASTERS_AMOUNT': True,
                           'PONGS_QUEUE': False,
                           'MASTER_COMMS_EXCH': False,
-                          'NODES_LIST': False})
+                          'LOG_FILENAME': False,
+                          'NODES_LIST': False,
+                          })
     rabbit_ip = config_params['RABBIT_IP']
     master_comms = config_params['MASTER_COMMS_EXCH']
     my_master_id = config_params['MY_MASTER_ID']
     masters_amount = config_params['MASTERS_AMOUNT']
+    log_filename = config_params['LOG_FILENAME']
 
     controller = MasterController(
         rabbit_ip, master_comms, my_master_id, masters_amount)
@@ -31,9 +34,11 @@ def main():
 def pings_init(config_params):
     rabbit_ip = config_params['RABBIT_IP']
     pongs_queue = config_params['PONGS_QUEUE']
+    log_filename = config_params['LOG_FILENAME']
     nodes_list = config_params['NODES_LIST'].split(',')
 
-    controller = PingsController(rabbit_ip, pongs_queue, nodes_list)
+
+    controller = PingsController(rabbit_ip, pongs_queue, nodes_list, log_filename)
     controller.run()
 
 

@@ -11,6 +11,7 @@ services:
       - testing_net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./events.log:/events.log
       
   
   master-1:
@@ -24,6 +25,8 @@ services:
       - testing_net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./events.log:/events.log
+      
 
   master-2:
     stop_signal: SIGINT
@@ -36,6 +39,8 @@ services:
       - testing_net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./events.log:/events.log
+      
 
   client-manager:
     stop_signal: SIGINT

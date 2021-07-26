@@ -23,5 +23,9 @@ class Persistor:
             f.write(f"{text}\n")
             f.write("CHECK\n")
 
+    def log(self, text):
+        with open(self.file_name, "a") as f:
+            f.write(f"{text}\n")
+
     def wipe(self):
         with open(self.file_name, "w") as _: pass

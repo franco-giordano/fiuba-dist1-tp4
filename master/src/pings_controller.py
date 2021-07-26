@@ -1,19 +1,20 @@
-from collections import defaultdict
 from threading import Thread, Lock
-from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
 from common.utils.rabbit_utils import RabbitUtils
 import logging
-from datetime import date, datetime
+from common.models.persistor import Persistor
+from datetime import datetime
 import subprocess
 from time import sleep
 
 
 class PingsController:
-    def __init__(self, rabbit_ip, pongs_queue, nodes_list):
+    def __init__(self, rabbit_ip, pongs_queue, nodes_list, log_filename):
         self.pongs_queue = pongs_queue
         self.timeout_interval = 5  # segundos
         self.nodes_list = nodes_list
+        self.log_filename = log_filename
+        self.log_persistor = Persistor(self.log_filename)
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(
             rabbit_ip)
@@ -58,7 +59,8 @@ class PingsController:
 
                     del self.generations[self.act_generation ^ 1][node_name]
                     # Lo levanto y le asigno el timestamp actual
-                    self.generations[self.act_generation][node_name] = datetime.now()
+                    self.generations[self.act_generation][node_name] = datetime.now(
+                    )
 
                 self.act_generation ^= 1  # Paso todo lo de la generación nueva a vieja
 
@@ -79,6 +81,8 @@ class PingsController:
                                 check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         logging.info(
             f'Stopped container {node_name}. Result={result.returncode}. Output={result.stdout}. Error={result.stderr}')
+
+        self.log_persistor.log(f'Restarting container {node_name}. Result={result.returncode}. Output={result.stdout}. Error={result.stderr}')
 
         result = subprocess.run(['docker', 'start', node_name],
                                 check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

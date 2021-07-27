@@ -11,7 +11,8 @@ from datetime import datetime
 from time import sleep
 from threading import Thread, Lock
 
-TIMEOUT_ELECTION = TIMEOUT_COORDINATOR = 4
+TIMEOUT_ELECTION = 4
+TIMEOUT_COORDINATOR = 12
 
 
 class MasterController:
@@ -163,7 +164,7 @@ class MasterController:
         """
         # IF LIDER VIVO
         if event["type"] == "[[LEADER_ALIVE]]":
-            # assert(event["id"] == self.current_leader)
+            assert(event["id"] == self.current_leader)
 
             #  reseteo el timer del lider
             self.internal_monitor.reset_leader_timer()

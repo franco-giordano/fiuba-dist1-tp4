@@ -35,6 +35,10 @@ class InternalMonitor:
         self._set_is_leader(True)
         if self.leader_monitor_thread:
             self.leader_monitor_thread.join()
+
+        if self.heartbeat_sender_thread and self.heartbeat_sender_thread.is_alive():
+            logging.error('INTERNAL_MON: TRATANDO DE LEVANTAR DOS HEARTBEAT_SENDER!')
+
         self.heartbeat_sender_thread = Thread(target=self._heartbeat_loop)
         self.heartbeat_sender_thread.start()
 
@@ -45,6 +49,9 @@ class InternalMonitor:
 
         if self.heartbeat_sender_thread:
             self.heartbeat_sender_thread.join()
+
+        if self.leader_monitor_thread and self.leader_monitor_thread.is_alive():
+            logging.error('INTERNAL_MON: TRATANDO DE LEVANTAR DOS LEADER_MONITOR!')
 
         self.leader_monitor_thread = Thread(
             target=self._leader_monitor, args=(self.leader_dead_callback,))
@@ -62,6 +69,7 @@ class InternalMonitor:
                     if elapsed_seconds > TIMEOUT_LEADER:
                         # se cae el lider !
                         logging.info('INTERNAL_MON: Murio el lider! Llamando callback')
+                        self.leader_timer = None
                         callback()
 
             sleep(2)  # segundos

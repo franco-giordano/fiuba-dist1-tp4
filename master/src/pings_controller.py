@@ -28,6 +28,7 @@ class PingsController:
         self.generations_lock = Lock()
 
         self.healthcheck_thread = Thread(target=self.nodes_healthcheck)
+        self.keep_going = True
 
     def run(self):
         self._gens_init()
@@ -40,6 +41,7 @@ class PingsController:
             logging.warning('PINGS: ######### Received Ctrl+C! Stopping...')
             self.channel.stop_consuming()
         finally:
+            self.keep_going = False
             self.healthcheck_thread.join()
             self.connection.close()
 
@@ -50,7 +52,7 @@ class PingsController:
         Levanto todo lo que haya quedado en el old_generation (self.act_generation ^= 1).
 
         """
-        while True:
+        while self.keep_going:
             with self.generations_lock:
                 nodes_to_restart = list(
                     self.generations[self.act_generation ^ 1].keys())

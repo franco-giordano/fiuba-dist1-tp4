@@ -11,8 +11,7 @@ services:
       - testing_net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./events.log:/events.log
-      
+      - ./persistance/master/events.log:/persistance/events.log
   
   master-1:
     stop_signal: SIGINT
@@ -25,8 +24,7 @@ services:
       - testing_net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./events.log:/events.log
-      
+      - ./persistance/master/events.log:/persistance/events.log
 
   master-2:
     stop_signal: SIGINT
@@ -39,8 +37,7 @@ services:
       - testing_net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./events.log:/events.log
-      
+      - ./persistance/master/events.log:/persistance/events.log
 
   client-manager:
     stop_signal: SIGINT
@@ -61,7 +58,7 @@ services:
     networks:
       - testing_net
     volumes:
-      - "./persistance/filter-q1:/persistance"
+      - ./persistance/filter-q1:/persistance
 
 networks:
   testing_net:

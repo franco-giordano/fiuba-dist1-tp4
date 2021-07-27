@@ -16,9 +16,13 @@ def main():
     master_comms = config_params['MASTER_COMMS_EXCH']
     my_master_id = config_params['MY_MASTER_ID']
     masters_amount = config_params['MASTERS_AMOUNT']
+    pongs_queue = config_params['PONGS_QUEUE']
+    nodes_list = config_params['NODES_LIST'].split(',')
+    log_filename = config_params['LOG_FILENAME']
 
     controller = MasterController(
-        rabbit_ip, master_comms, my_master_id, masters_amount)
+        rabbit_ip, master_comms, my_master_id, masters_amount,
+        pongs_queue, nodes_list, log_filename)
 
     controller.run()
 

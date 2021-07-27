@@ -29,6 +29,7 @@ class InternalMonitor:
         self.my_master_id = my_master_id
         self.master_comms_exchange = master_comms_exchange
         self.masters_amount = masters_amount
+        self.keep_going = True
 
     def start_sending_heartbeats(self):
         logging.info('INTERNAL_MON: Ahora soy lider (⌐■_■) enviando heartbeats')
@@ -38,6 +39,7 @@ class InternalMonitor:
 
         if self.heartbeat_sender_thread and self.heartbeat_sender_thread.is_alive():
             logging.error('INTERNAL_MON: TRATANDO DE LEVANTAR DOS HEARTBEAT_SENDER!')
+            return
 
         self.heartbeat_sender_thread = Thread(target=self._heartbeat_loop)
         self.heartbeat_sender_thread.start()
@@ -52,6 +54,7 @@ class InternalMonitor:
 
         if self.leader_monitor_thread and self.leader_monitor_thread.is_alive():
             logging.error('INTERNAL_MON: TRATANDO DE LEVANTAR DOS LEADER_MONITOR!')
+            return
 
         self.leader_monitor_thread = Thread(
             target=self._leader_monitor, args=(self.leader_dead_callback,))
@@ -62,7 +65,7 @@ class InternalMonitor:
 
     def _leader_monitor(self, callback):
 
-        while True:
+        while self.keep_going:
             with self.leader_timer_lock:
                 if self.leader_timer is not None:
                     elapsed_seconds = (datetime.now() - self.leader_timer).seconds
@@ -85,11 +88,11 @@ class InternalMonitor:
 
         heartbeat_body = ObjectEncoderDecoder.encode_obj(
             {"type": "[[LEADER_ALIVE]]", "id": self.my_master_id})
-        while True:
+        while self.keep_going:
             MasterUtils.send_to_all_masters(channel, self.master_comms_exchange,
                                         self.my_master_id, heartbeat_body, self.masters_amount)
 
-            sleep(2.5)
+            sleep(1.5)
 
             with self.is_leader_lock:
                 if not self.is_leader:  # si ya no soy lider, debo dejar de heartbeatear
@@ -98,3 +101,14 @@ class InternalMonitor:
     def _set_is_leader(self, value):
         with self.is_leader_lock:
             self.is_leader = value
+
+    def stop_monitoring(self):
+        # desactivo si estoy monitoreando leader
+        with self.leader_timer_lock:
+            self.leader_timer = None
+
+        # desactivo si estoy mandando heartbeats
+        self._set_is_leader(False)
+
+        # desactivo todo
+        self.keep_going = False

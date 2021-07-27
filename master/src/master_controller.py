@@ -22,7 +22,7 @@ class MasterController:
         self.master_comms_exchange = master_comms_exchange
         self.my_master_id = my_master_id
         self.masters_amount = masters_amount
-        self.current_leader = -1
+        self.current_leader = None
         self.log_filename = log_filename
         self.pongs_queue = pongs_queue
         self.nodes_list = nodes_list
@@ -68,12 +68,18 @@ class MasterController:
             logging.info('MASTER: ######### Received Ctrl+C! Stopping...')
             self.channel.stop_consuming()
         finally:
+            with self.election_timer_lock:
+                self.election_timer = None
+            with self.coordinator_timer_lock:
+                self.coordinator_timer = None
+
+            self.internal_monitor.stop_monitoring()
             self.election_timer_check_thread.join()
             self.heartbeat_process.join()
             self.connection.close()
 
     def celebrate_election(self):
-        self.current_leader = -1
+        self.current_leader = None
 
         if self.my_master_id < self.masters_amount - 1:  # No soy el mas grande, llamo a una eleccion
             self._forward_election()
@@ -128,7 +134,7 @@ class MasterController:
         # IF ALIVE: Sigo consumiendo, hasta esperar el mensaje coordinator, ya no voy a ser el lider
         if event["type"] == "[[ALIVE]]":
             logging.info(f"MASTER: recibo [[ALIVE]] desde {event['id']} siendo {self.my_master_id}")
-            if self.my_master_id == self.current_leader:
+            if self.am_i_leader():
                 assert(event["id"] < self.my_master_id)
                 # No voy a estar monitoreando heartbeats durante la elección
                 os.kill(self.pings_process.pid, signal.SIGINT)
@@ -144,8 +150,9 @@ class MasterController:
             new_leader = event["id"]
             assert(new_leader > self.my_master_id)
             if self.am_i_leader():
-                self.current_leader = new_leader
                 os.kill(self.pings_process.pid, signal.SIGINT)
+
+            self.current_leader = new_leader
 
             with self.election_timer_lock:
                 self.election_timer = None

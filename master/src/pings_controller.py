@@ -12,7 +12,7 @@ class PingsController:
     def __init__(self, rabbit_ip, my_master_id, pongs_queue, nodes_list, log_filename):
         self.my_master_id = my_master_id
         self.pongs_queue = pongs_queue
-        self.timeout_interval = 5  # segundos
+        self.timeout_interval = 10  # segundos
         self.nodes_list = nodes_list
         self.log_filename = log_filename
         self.log_persistor = Persistor(self.log_filename)
@@ -66,7 +66,7 @@ class PingsController:
 
             sleep(self.timeout_interval)
 
-    def _pongs_callback(self, ch, method, properties, body):
+    def _pongs_callback(self, ch, method, properties, body): # callback para la cola del pings controller
         node_name = ObjectEncoderDecoder.decode_bytes(body)
         logging.info(f'PINGS: Recibido {body}')
         if node_name != f"master-{self.my_master_id}":

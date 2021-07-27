@@ -11,7 +11,7 @@ from datetime import datetime
 from time import sleep
 from threading import Thread, Lock
 
-TIMEOUT_ELECTION = TIMEOUT_COORDINATOR = 5
+TIMEOUT_ELECTION = TIMEOUT_COORDINATOR = 4
 
 
 class MasterController:
@@ -62,7 +62,7 @@ class MasterController:
         try:
             self.channel.start_consuming()
         except KeyboardInterrupt:
-            logging.warning('MASTER: ######### Received Ctrl+C! Stopping...')
+            logging.info('MASTER: ######### Received Ctrl+C! Stopping...')
             self.channel.stop_consuming()
         finally:
             self.election_timer_check_thread.join()
@@ -137,7 +137,7 @@ class MasterController:
                 with self.coordinator_timer_lock:
                     self.coordinator_timer = None
 
-                self.internal_monitor.start_monitoring_leader(new_leader)
+                self.internal_monitor.start_monitoring_leader()
 
         """
         LIDER:
@@ -171,19 +171,22 @@ class MasterController:
         controller.run()
 
     def _forward_election(self):
-        logging.warning('MASTER: iniciando [[ELECTION]] !')
+        logging.info('MASTER: iniciando [[ELECTION]] !')
 
+        conn, channel = MasterUtils.setup_connection_with_channel(self.rabbit_ip)
         election_msg = ObjectEncoderDecoder.encode_obj(
             {"type": "[[ELECTION]]", "id": self.my_master_id})
-        MasterUtils.send_to_greater_ids(self.channel, self.master_comms_exchange,
+        MasterUtils.send_to_greater_ids(channel, self.master_comms_exchange,
                                         self.my_master_id, election_msg, self.masters_amount)
 
     def _declare_my_leadership(self):
-        logging.warning('MASTER: declarandome como [[COORDINATOR]] (⌐■_■)')
+        logging.info('MASTER: declarandome como [[COORDINATOR]] (⌐■_■)')
         self.internal_monitor.start_sending_heartbeats()
-        coord_msg = ObjectEncoderDecoder.encode_obj(
-            {"type": "[[COORDINATOR]]", "id": self.my_master_id})
-        MasterUtils.send_to_all_masters(self.channel, self.master_comms_exchange,
+
+        conn, channel = MasterUtils.setup_connection_with_channel(self.rabbit_ip)
+        coord_msg = ObjectEncoderDecoder.encode_obj({"type": "[[COORDINATOR]]", "id": self.my_master_id})
+
+        MasterUtils.send_to_all_masters(channel, self.master_comms_exchange,
                                         self.my_master_id, coord_msg, self.masters_amount)
 
     def _heartbeat_init(self, rabbit_ip):

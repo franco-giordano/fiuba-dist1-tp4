@@ -1,6 +1,8 @@
 import pika
 from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
 
+import logging
+# logging.getLogger("pika").propagate = False  # Para que pika no me llene los logs
 class MasterUtils:
     @staticmethod
     def setup_connection_with_channel(rabbit_ip):

@@ -1,4 +1,6 @@
 import pika
+import logging
+# logging.getLogger("pika").propagate = False
 
 class RabbitUtils:
     @staticmethod

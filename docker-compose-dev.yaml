@@ -39,26 +39,28 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./persistance/master/events.log:/persistance/events.log
 
-  client-manager:
-    stop_signal: SIGINT
-    container_name: client-manager
-    image: client-manager:latest
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
+  # client-manager:
+  #   stop_signal: SIGINT
+  #   container_name: client-manager
+  #   image: client-manager:latest
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #   networks:
+  #     - testing_net
+  #   volumes:
+  #     - ./persistance/client-manager:/persistance
 
-  filter-q1:
-    stop_signal: SIGINT
-    container_name: filter-q1
-    image: filter-q1:latest
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - testing_net
-    volumes:
-      - ./persistance/filter-q1:/persistance
+  # filter-q1:
+  #   stop_signal: SIGINT
+  #   container_name: filter-q1
+  #   image: filter-q1:latest
+  #   entrypoint: python3 /main.py
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #   networks:
+  #     - testing_net
+  #   volumes:
+  #     - ./persistance/filter-q1:/persistance
 
 networks:
   testing_net:

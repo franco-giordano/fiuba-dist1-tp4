@@ -14,11 +14,10 @@ class InternalMonitor:
     def __init__(self, rabbit_ip, leader_dead_callback,
                  my_master_id, master_comms_exchange, masters_amount):
 
-        self.connection, self.channel = MasterUtils.setup_connection_with_channel(
-            rabbit_ip)
         self.heartbeat_sender_thread = None # Thread(target=self._heartbeat_loop)
         self.leader_monitor_thread = None # Thread(
         #     target=self._leader_monitor, args=(leader_dead_callback,))
+        self.rabbit_ip = rabbit_ip
 
         self.leader_timer = None
         self.leader_timer_lock = Lock()
@@ -32,8 +31,7 @@ class InternalMonitor:
         self.masters_amount = masters_amount
 
     def start_sending_heartbeats(self):
-        logging.info(
-            'INTERNAL_MON: Ahora soy lider (⌐■_■) enviando heartbeats')
+        logging.info('INTERNAL_MON: Ahora soy lider (⌐■_■) enviando heartbeats')
         self._set_is_leader(True)
         if self.leader_monitor_thread:
             self.leader_monitor_thread.join()
@@ -56,18 +54,17 @@ class InternalMonitor:
         self.leader_timer = datetime.now()
 
     def _leader_monitor(self, callback):
+
         while True:
             with self.leader_timer_lock:
                 if self.leader_timer is not None:
-                    elapsed_seconds = (
-                        datetime.now() - self.leader_timer).seconds
+                    elapsed_seconds = (datetime.now() - self.leader_timer).seconds
                     if elapsed_seconds > TIMEOUT_LEADER:
                         # se cae el lider !
-                        logging.info(
-                            'INTERNAL_MON: Murio el lider! Llamando callback')
+                        logging.info('INTERNAL_MON: Murio el lider! Llamando callback')
                         callback()
 
-            sleep(2.5)  # segundos
+            sleep(2)  # segundos
 
             with self.is_leader_lock:
                 if self.is_leader:  # si ahora soy lider, debo dejar de monitorear
@@ -76,10 +73,12 @@ class InternalMonitor:
                     break
 
     def _heartbeat_loop(self):
+        conn, channel =  MasterUtils.setup_connection_with_channel(self.rabbit_ip)
+
         heartbeat_body = ObjectEncoderDecoder.encode_obj(
             {"type": "[[LEADER_ALIVE]]", "id": self.my_master_id})
         while True:
-            MasterUtils.send_to_all_masters(self.channel, self.master_comms_exchange,
+            MasterUtils.send_to_all_masters(channel, self.master_comms_exchange,
                                         self.my_master_id, heartbeat_body, self.masters_amount)
 
             sleep(2.5)

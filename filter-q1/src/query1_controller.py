@@ -37,8 +37,7 @@ class Query1Controller:
 
 
     def run(self):
-        logging.info(
-            'FILTER QUERY1: Waiting for messages. To exit press CTRL+C')
+        logging.info('FILTER QUERY1: Waiting for messages. To exit press CTRL+C')
         try:
             self.channel.start_consuming()
         except KeyboardInterrupt:

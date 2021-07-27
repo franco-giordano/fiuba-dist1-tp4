@@ -2,8 +2,13 @@
 
 ## Bootstraping
 
-Place CSVs in a /sources folder
-
+1. Place CSVs in a /sources folder
+2. Build RabbitMQ image
+```bash
+cd base-images
+./build.sh
+```
+3. Run
 ```bash
 make rabbit-up
 # wait for rabbit to start...

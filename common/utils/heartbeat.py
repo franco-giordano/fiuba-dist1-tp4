@@ -7,7 +7,7 @@ class HeartBeat:
         self.node_id = node_id
         self.rabbit_ip = rabbit_ip
 
-        self.heartbeat_time = 1.5
+        self.heartbeat_time = 0.5
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(self.rabbit_ip)
         self.heartbeat_queue_name = heartbeat_queue_name
@@ -19,8 +19,3 @@ class HeartBeat:
             RabbitUtils.send_to_queue(self.channel, self.heartbeat_queue_name, heartbeat_body)
             
             sleep(self.heartbeat_time)
-
-
-
-
-

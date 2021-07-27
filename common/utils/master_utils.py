@@ -2,7 +2,7 @@ import pika
 from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
 
 import logging
-# logging.getLogger("pika").propagate = False  # Para que pika no me llene los logs
+logging.getLogger("pika").propagate = False  # Para que pika no me llene los logs
 class MasterUtils:
     @staticmethod
     def setup_connection_with_channel(rabbit_ip):
@@ -43,11 +43,26 @@ class MasterUtils:
                 body=body)
 
     @staticmethod
+    def send_to_id(channel, exchange_name, my_master_id, body, other_id):
+        channel.basic_publish(
+            exchange=exchange_name,
+            routing_key=f"from_{my_master_id}.to_{other_id}",
+            body=body)
+
+    @staticmethod
     def send_alive_bully_msg(channel, exchange_name, my_master_id, dest_master_id):
         channel.basic_publish(
             exchange=exchange_name,
             routing_key=f"from_{my_master_id}.to_{dest_master_id}",
             body=ObjectEncoderDecoder.encode_obj({"type": "[[ALIVE]]", "id": my_master_id}))
+
+    @staticmethod
+    def send_one_coordinator_msg(channel, exchange_name, my_master_id, dest_master_id):
+        coord_msg = ObjectEncoderDecoder.encode_obj({"type": "[[COORDINATOR]]", "id": my_master_id})
+        channel.basic_publish(
+            exchange=exchange_name,
+            routing_key=f"from_{my_master_id}.to_{dest_master_id}",
+            body=coord_msg)
 
 
     @staticmethod

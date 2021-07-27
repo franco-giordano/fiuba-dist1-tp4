@@ -91,7 +91,7 @@ class PingsController:
 
             # Borro de la vieja generación
             if node_name in self.generations[self.act_generation ^ 1]:
-                del self.generations[self.generations ^ 1][node_name]
+                del self.generations[self.act_generation ^ 1][node_name]
 
     def _gens_init(self):
         if self.nodes_list == ['']: # empty nodes list

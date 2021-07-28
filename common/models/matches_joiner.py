@@ -4,6 +4,8 @@ import logging
 from common.models.persistor import Persistor
 import json
 from common.utils.rabbit_utils import RabbitUtils
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
+from pika import BasicProperties
 
 class MatchesJoiner:
     def __init__(self, id_joiner, channel, output_exchange_name, next_reducers_amount, force_send_on_first_join=False, persistance_file):
@@ -26,10 +28,7 @@ class MatchesJoiner:
                 if self._is_player_obj(obj):
                     self._add_player(obj)
                 else:
-                    self._add_match(obj)                    
-                # TODO: Ver si es necesario agregar el match
-                #   --> creo que si, porque puedo mandar a output
-                #       solo aquellos matches completos
+                    self._add_match(obj)
 
     def _is_player_obj(self, obj):
         return 'match' in obj
@@ -102,22 +101,43 @@ class MatchesJoiner:
         #     self.persistor.wipe()
             # self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=sentinel)
 
-    def _broadcast_msg(self, msg):
-        all_keys = self.shard_key_getter.generate_all_shard_keys()
-        for key in all_keys:
-            self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=msg)
+    # def _broadcast_msg(self, msg):
+    #     all_keys = self.shard_key_getter.generate_all_shard_keys()
+    #     for key in all_keys:
+    #         self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=msg)
 
     def flush_results(self):
-        self._broadcast_msg(f"INICIO {self.id_joiner}")
+        self._broadcast_inicio()
+        props = BasicProperties(headers={'id': self.id_joiner})
 
         for tkn, joined_match in self.current_matches.items():
             if self._should_send(joined_match): # solo mandarlo si se joineo algo
                 shard_key = self.shard_key_getter.get_key_for_str(tkn)
                 serialized = BatchEncoderDecoder.encode_batch(joined_match)
                 logging.info(f'MATCHES JOINER: Found join for match {joined_match}, sending to shard key {shard_key}')
-                self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=shard_key, body=serialized)
+                self.channel.basic_publish(exchange=self.output_exchange_name,
+                    routing_key=shard_key, body=serialized, properties=props)
 
         self.persistor.persist("FINISH")
-        self._broadcast_msg(f"FIN {self.id_joiner}")
+        self._broadcast_fin()
 
         self.persistor.wipe()
+    
+    def _broadcast_inicio(self):
+        inicio_msg = ApiPacketsEncoder.create_inicio_pkt()
+        # RabbitUtils.send_to_queue(self.channel, self.output_queue_name, inicio_msg, headers={'id':self.id_grouper})
+        props=BasicProperties(headers={'id': self.id_joiner})
+
+        all_keys = self.shard_key_getter.generate_all_shard_keys()
+        for key in all_keys:
+            self.channel.basic_publish(exchange=self.output_exchange_name,
+                routing_key=key, body=inicio_msg, properties=props)
+
+    def _broadcast_fin(self):
+        fin_msg = ApiPacketsEncoder.create_fin_pkt()
+        props=BasicProperties(headers={'id': self.id_joiner})
+
+        all_keys = self.shard_key_getter.generate_all_shard_keys()
+        for key in all_keys:
+            self.channel.basic_publish(exchange=self.output_exchange_name,
+                routing_key=key, body=fin_msg, properties=props)

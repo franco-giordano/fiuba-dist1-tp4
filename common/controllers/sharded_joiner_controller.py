@@ -2,10 +2,10 @@ import logging
 from common.models.matches_joiner import MatchesJoiner
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from common.utils.rabbit_utils import RabbitUtils
-from common.models.sentinel_tracker import SentinelTracker
+from common.models.persisted_sentinel_tracker import PersistedSentinelTracker
 
 class ShardedJoinerController:
-    def __init__(self, rabbit_ip, shard_exchange_name, output_exchange_name, assigned_shard_key, next_reducers_amount, total_incoming_sentinels, force_send=False):
+    def __init__(self, rabbit_ip, shard_exchange_name, output_exchange_name, assigned_shard_key, next_reducers_amount, total_incoming_sentinels, force_send=False, persistance_file, sentinels_file):
         self.shard_exchange_name = shard_exchange_name
         self.assigned_shard_key = assigned_shard_key
 
@@ -18,8 +18,9 @@ class ShardedJoinerController:
         # setup output exchange
         RabbitUtils.setup_output_direct_exchange(self.channel, output_exchange_name)
 
-        self.matches_joiner = MatchesJoiner(self.channel, output_exchange_name, next_reducers_amount, force_send_on_first_join=force_send)
-        self.sentinel_tracker = SentinelTracker(total_incoming_sentinels)
+        self.matches_joiner = MatchesJoiner(assigned_shard_key, self.channel, output_exchange_name, next_reducers_amount, force_send_on_first_join=force_send, persistance_file)
+        # self.sentinel_tracker = SentinelTracker(total_incoming_sentinels)
+        self.sentinel_tracker = PersistedSentinelTracker(total_incoming_sentinels, sentinels_file)
 
     def run(self):
         logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Waiting for messages. To exit press CTRL+C')
@@ -36,9 +37,7 @@ class ShardedJoinerController:
             if self.sentinel_tracker.count_and_reached_limit():
                 logging.info(f"SHARDED JOINER {self.assigned_shard_key}: Received all sentinels! Flushing and shutting down...")
                 self.matches_joiner.received_sentinel()
-
-                RabbitUtils.ack_from_method(self.channel, method)
-                raise KeyboardInterrupt
+                self.sentinel_tracker.reset()
 
             RabbitUtils.ack_from_method(self.channel, method)
             return

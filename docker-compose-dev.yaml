@@ -64,6 +64,22 @@ services:
     volumes:
       - ./persistance/filter-q1:/persistance
 
+  join-node-q3-0:
+    stop_signal: SIGINT
+    container_name: join-node-q3-0
+    image: join-nodes-q3:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - filter-matches-q3
+    environment:
+      - PYTHONUNBUFFERED=1
+      - JOINER_ID=0
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/join-nodes-q3:/persistance"
+    
+
 networks:
   testing_net:
     ipam:

@@ -41,7 +41,6 @@ services:
       - PYTHONUNBUFFERED=1
       - OUTPUT_EXCHANGE_NAME=sharded-by-match-q2
       - NEXT_REDUCERS_AMOUNT=5
-      - BATCH_SIZE=10000
     networks:
       - testing_net
 
@@ -56,7 +55,6 @@ services:
       - PYTHONUNBUFFERED=1
       - OUTPUT_EXCHANGE_NAME=sharded-by-match-q3
       - REDUCERS_AMOUNT=5
-      - BATCH_SIZE=10000
     networks:
       - testing_net
 

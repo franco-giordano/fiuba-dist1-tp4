@@ -1,3 +1,4 @@
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from src.filter_query1 import FilterQuery1
 from common.utils.rabbit_utils import RabbitUtils
@@ -50,16 +51,21 @@ class Query1Controller:
         if BatchEncoderDecoder.is_encoded_sentinel(body):
             logging.info(f"FILTER QUERY1: Received sentinel! Shutting down...")
             # mandar a cola final
+
+            start_msg = ApiPacketsEncoder._encode_pkt({"msg": "[[INICIO]]"})
+            end_msg = ApiPacketsEncoder._encode_pkt({"msg": "[[FIN]]"})
+
             self.channel.basic_publish(
-                exchange='', routing_key=self.output_queue_name, body=f"INICIO")
+                exchange='', routing_key=self.output_queue_name, body=start_msg)
             for serialized_match in self.filtered_rows:
                 self.channel.basic_publish(
                     exchange='', routing_key=self.output_queue_name, body=serialized_match)
             self.channel.basic_publish(
-                exchange='', routing_key=self.output_queue_name, body=f"FIN")
-            raise KeyboardInterrupt
+                exchange='', routing_key=self.output_queue_name, body=end_msg)
 
-        # TODO: hacer la logica para que borre duplicados y mande al final
+            RabbitUtils.ack_from_method(self.channel, method)
+            return
+            # TODO: WIPE del archivo de persistencia
 
         batch = BatchEncoderDecoder.decode_bytes(body)
         passing = list(filter(self.filter.should_pass, batch))
@@ -76,7 +82,8 @@ class Query1Controller:
                     MatchEncoderDecoder.encode_match_str(match))
 
                 # ack
-                RabbitUtils.ack_from_method(self.channel, method)
+        
+        RabbitUtils.ack_from_method(self.channel, method)
 
     def _preprocess(self, match):
         can_pass = self.filter.should_pass(match)

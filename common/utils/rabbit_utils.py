@@ -62,10 +62,12 @@ class RabbitUtils:
         return callback_queue
 
     @staticmethod
-    def send_to_queue(channel, queue_name, body, corr_id=None, reply_queue=None):
+    def send_to_queue(channel, queue_name, body, corr_id=None, reply_queue=None, headers=None):
         props = None
-        if corr_id:
+        if corr_id and reply_queue:
             props=pika.BasicProperties(correlation_id = corr_id, reply_to=reply_queue)
+        elif headers:
+            props=pika.BasicProperties(headers=headers)
         channel.basic_publish(exchange='',
             routing_key=queue_name,
             properties=props,

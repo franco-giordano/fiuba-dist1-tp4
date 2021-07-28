@@ -117,7 +117,7 @@ class MatchesJoiner:
                 logging.info(f'MATCHES JOINER: Found join for match {joined_match}, sending to shard key {shard_key}')
                 self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=shard_key, body=serialized)
 
+        self.persistor.persist("FINISH")
         self._broadcast_msg(f"FIN {self.id_joiner}")
 
-        self.persistor.persist("FINISH")
         self.persistor.wipe()

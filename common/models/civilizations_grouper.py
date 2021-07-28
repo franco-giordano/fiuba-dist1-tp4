@@ -38,7 +38,7 @@ class CivilizationsGrouper:
     def received_sentinel(self):
         logging.info(f'CIVS GROUPER: Flushing all grouped civs')
 
-        if("FINISH" in self.persistor.read() or not self.persistor.read()):
+        if("FINISH\n" in self.persistor.read() or not self.persistor.read()):
             # Ignorar el sentinel directamente
             self.persistor.wipe()
             return
@@ -59,11 +59,11 @@ class CivilizationsGrouper:
             # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=serialized)
             RabbitUtils.send_to_queue(self.channel, self.output_queue_name, serialized, headers={'id':self.id_grouper})
 
-        # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"FIN {self.id_grouper}")
+        self.persistor.persist("FINISH")
+
         fin_msg = ApiPacketsEncoder.create_fin_pkt()
         RabbitUtils.send_to_queue(self.channel, self.output_queue_name, fin_msg, headers={'id':self.id_grouper})
         
-        self.persistor.persist("FINISH")
         self.persistor.wipe()
 
 

@@ -31,17 +31,6 @@ class ShardedGrouperController:
         self.connection.close()
 
     def _callback(self, ch, method, properties, body):
-        if BatchEncoderDecoder.is_encoded_sentinel(body):
-            logging.info(f"SHARDED GROUPER {self.assigned_shard_key}: Received one sentinel!")
-            if self.sentinel_tracker.count_and_reached_limit():
-                logging.info(f"SHARDED GROUPER {self.assigned_shard_key}: Received all sentinels! Flushing and shutting down...")
-                self.civ_grouper.received_sentinel()
-                RabbitUtils.ack_from_method(self.channel, method)
-                raise KeyboardInterrupt
-            
-            RabbitUtils.ack_from_method(self.channel, method)
-            return
-
         joined_match = BatchEncoderDecoder.decode_bytes(body)
         logging.info(f'SHARDED GROUPER {self.assigned_shard_key}: Received joined match {body[:25]}...')
 

@@ -1,4 +1,5 @@
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 from common.utils.rabbit_utils import RabbitUtils
 from common.models.sentinel_tracker import SentinelTracker
 import logging
@@ -38,5 +39,14 @@ class AccumulatorController:
             return
 
         data = BatchEncoderDecoder.decode_bytes(body)
-        logging.info(f"ACCUMULATOR: Received partial data pair {body}...")
-        self.accum.add_partial_data(data)
+        logging.info(f"ACCUMULATOR: Received data {body}...")
+        from_id = properties.headers['id']
+
+        if ApiPacketsEncoder.is_control_pkt(data):
+            msg_type = data['msg']
+            if msg_type == '[[INICIO]]':
+                pass
+            elif msg_type == '[[FIN]]':
+                pass
+        else:   # es un dato del dataset
+            self.accum.add_partial_data(data)

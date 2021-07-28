@@ -3,6 +3,7 @@ from common.models.persistor import Persistor
 import logging
 import json
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 
 class CivilizationsGrouper:
     def __init__(self, id_grouper, channel, output_queue_name, aggregator, persistance_file):
@@ -48,15 +49,20 @@ class CivilizationsGrouper:
         # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=sentinel)
 
     def flush_results(self):
-        self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"INICIO {self.id_grouper}")
+        inicio_msg = ApiPacketsEncoder.create_inicio_pkt()
+        RabbitUtils.send_to_queue(self.channel, self.output_queue_name, inicio_msg, headers={'id':self.id_grouper})
+        # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"INICIO {self.id_grouper}")
         for civ, players_list in self.current_civs.items():
             results = self.aggregator.collapse(players_list)
             logging.info(f'CIVS GROUPER: Announcing for civ {civ} the results {results}')
             serialized = BatchEncoderDecoder.encode_batch([civ, results])
-            self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=serialized)
+            # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=serialized)
+            RabbitUtils.send_to_queue(self.channel, self.output_queue_name, serialized, headers={'id':self.id_grouper})
 
-        self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"FIN {self.id_grouper}")
-
+        # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=f"FIN {self.id_grouper}")
+        fin_msg = ApiPacketsEncoder.create_fin_pkt()
+        RabbitUtils.send_to_queue(self.channel, self.output_queue_name, fin_msg, headers={'id':self.id_grouper})
+        
         self.persistor.persist("FINISH")
         self.persistor.wipe()
 

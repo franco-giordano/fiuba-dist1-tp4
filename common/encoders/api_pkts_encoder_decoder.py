@@ -20,3 +20,15 @@ class ApiPacketsEncoder:
     @classmethod
     def create_request_pkt(cls, node_name):
         return cls._encode_pkt({'id': node_name})
+
+    @classmethod
+    def is_control_pkt(cls, decoded_pkt):
+        return 'msg' in decoded_pkt
+
+    @classmethod
+    def create_inicio_pkt(cls):
+        return cls._encode_pkt({'msg': '[[INICIO]]'})
+
+    @classmethod
+    def create_fin_pkt(cls):
+        return cls._encode_pkt({'msg': '[[FIN]]'})

@@ -8,8 +8,6 @@ all:
 docker-image:
 	docker build -f ./client-manager/Dockerfile -t "client-manager:latest" .
 	docker build -f ./filter-q1/Dockerfile -t "filter-q1:latest" .
-	# docker build -f ./fanout-matches/Dockerfile -t "fanout-matches:latest" .
-	# docker build -f ./fanout-players/Dockerfile -t "fanout-players:latest" .
 	# docker build -f ./exchanger/Dockerfile -t "exchanger:latest" .
 	# docker build -f ./group-by-nodes-q2/Dockerfile -t "group-by-nodes-q2:latest" .
 	# docker build -f ./filter-by-ladder/Dockerfile -t "filter-by-ladder:latest" .

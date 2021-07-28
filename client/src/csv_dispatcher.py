@@ -30,7 +30,8 @@ class CSVDispatcher:
 
     def run(self):
         logging.info(f"Enviando {self.client_id} a la cola de requests")
-        RabbitUtils.send_to_queue(self.channel, self.request_queue_name, f"{self.client_id}", self.corr_id, self.callback_queue)
+        request_msg = ApiPacketsEncoder.create_request_pkt(self.client_id)
+        RabbitUtils.send_to_queue(self.channel, self.request_queue_name, request_msg, self.corr_id, self.callback_queue)
 
         # while self.response is None:
         #     self.connection.process_data_events()
@@ -44,8 +45,9 @@ class CSVDispatcher:
             self.players_proc.join()
 
     def on_response(self, ch, method, props, body):
+        logging.info(f"Recibo respuesta {body}")
         if self.corr_id == props.correlation_id:
-            reply = ApiPacketsEncoder.decode_bytes(body)
+            reply = ApiPacketsEncoder.decode_bytes(body)['msg']
             if reply == "OK_TO_UPLOAD":
                 self.able_to_upload = True
 
@@ -69,7 +71,7 @@ class CSVDispatcher:
                 if count >= self.BATCH_SIZE:
                     serialized = BatchEncoderDecoder.encode_batch(batch)
                     channel.basic_publish(exchange=fanout_name, routing_key='', body=serialized)
-                    logging.info(f"{fanout_name}: Sent batch {serialized[:25]}...")
+                    # logging.info(f"{fanout_name}: Sent batch {serialized[:25]}...")
                     batch = []
                     count = 0
                     # time.sleep(5)
@@ -79,7 +81,7 @@ class CSVDispatcher:
             if count > 0:
                 serialized = BatchEncoderDecoder.encode_batch(batch)
                 channel.basic_publish(exchange=fanout_name, routing_key='', body=serialized)
-                logging.info(f"{fanout_name}: Sent last missing batch {serialized[:25]}...")
+                # logging.info(f"{fanout_name}: Sent last missing batch {serialized[:25]}...")
 
         logging.info(f"{fanout_name}: Reached EOF, sending sentinel")
         sentinel_batch = BatchEncoderDecoder.create_encoded_sentinel()

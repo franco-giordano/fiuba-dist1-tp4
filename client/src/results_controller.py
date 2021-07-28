@@ -1,3 +1,4 @@
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from common.utils.rabbit_utils import RabbitUtils
@@ -12,10 +13,10 @@ class ResultsController:
 
         self.persistor = Persistor(partial_persistance_filename)
 
-        self.result_set = self._reload_init_results()
+        self.results_set = self._reload_init_results()
 
         # results queues
-        RabbitUtils.setup_input_queue(self.channel, output_queue, self._callback, False)
+        RabbitUtils.setup_input_queue(self.channel, output_queue, self._callback, auto_ack = False)
 
     def run(self):
         logging.info(f'RESULTS {self.id}: Waiting for results. To exit press CTRL+C. Will write to {self.results_file}')
@@ -35,28 +36,26 @@ class ResultsController:
         return results_set
 
     def _callback(self, ch, method, properties, body):       
-        batch = BatchEncoderDecoder.decode_bytes(body)
-        logging.info(f"RESULTS: Received batch, writing result '{method.routing_key}, {batch}\n'")
+        control_pkg = ApiPacketsEncoder.decode_bytes(body).get('msg', None)
+        logging.info(f"RESULTS: Received batch, writing result '{method.routing_key}, {body}\n'")
 
-        if batch == "[[INICIO]]":
-            self.result_set = set()
+        if control_pkg == "[[INICIO]]":
+            self.results_set = set()
             self.persistor.wipe()
-        elif batch == "[[FIN]]":
+        elif control_pkg == "[[FIN]]":
             with open(self.results_file, "w") as f:
                 for row in self.results_set:
                     f.write(f"{row}\n")
             RabbitUtils.ack_from_method(self.channel, method)
             self.channel.stop_consuming()
+            return
         else:
-            encoded_batch = ObjectEncoderDecoder.encode_obj_str(batch)
-            if encoded_batch not in self.results_file:
-                self.results_file.write(encoded_batch)
+            row = ObjectEncoderDecoder.decode_bytes(body)
+            encoded_row = ObjectEncoderDecoder.encode_obj_str(row)
 
-            self.result_set.add(encoded_batch)
-            self.persistor.persist(encoded_batch)
+            self.results_set.add(encoded_row)
+            self.persistor.persist(encoded_row)
 
-        # self.results_file.write(f'{method.routing_key}, {batch}\n')
-        # self.results_file.flush()
         RabbitUtils.ack_from_method(self.channel, method)
 
 """

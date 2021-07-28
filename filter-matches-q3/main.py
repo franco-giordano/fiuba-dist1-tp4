@@ -9,7 +9,6 @@ def main():
 		'OUTPUT_EXCHANGE_NAME': False,
 		'RABBIT_IP': False,
 		'NEXT_REDUCERS_AMOUNT': True,
-		'BATCH_SIZE': True,
 		'1v1_ROUTING_KEY': False,
 		'WORKERS_AMOUNT': True,
 		'WORKERS_SHARED_QUEUE': False})
@@ -31,7 +30,7 @@ def worker_init(proc_id, config_params):
 	output_exchange_name = config_params['OUTPUT_EXCHANGE_NAME']
 	reducers_amount = config_params['NEXT_REDUCERS_AMOUNT']
 	input_routing_key = config_params['1v1_ROUTING_KEY']
-	batch_size = config_params['BATCH_SIZE']
+	batch_size = 1 # config_params['BATCH_SIZE']
 	queue_name = config_params['WORKERS_SHARED_QUEUE']
 
 	match_filter = FilterQuery3()

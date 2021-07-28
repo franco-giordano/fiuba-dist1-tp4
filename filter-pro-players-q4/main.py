@@ -6,13 +6,12 @@ def main():
 		{'PLAYERS_EXCHANGE_NAME': False,
 		'OUTPUT_EXCHANGE_NAME': False,
 		'RABBIT_IP': False,
-		'NEXT_REDUCERS_AMOUNT': True,
-		'BATCH_SIZE': True})
+		'NEXT_REDUCERS_AMOUNT': True})
 	rabbit_ip = config_params['RABBIT_IP']
 	players_exchange_name = config_params['PLAYERS_EXCHANGE_NAME']
 	output_exchange_name = config_params['OUTPUT_EXCHANGE_NAME']
 	reducers_amount = config_params['NEXT_REDUCERS_AMOUNT']
-	batch_size = config_params['BATCH_SIZE']
+	batch_size = 1 # config_params['BATCH_SIZE']
 
 	controller = ProPlayersController(rabbit_ip, players_exchange_name, \
 		output_exchange_name, reducers_amount, batch_size)

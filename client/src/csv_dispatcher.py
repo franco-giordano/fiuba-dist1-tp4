@@ -11,7 +11,7 @@ import pika
 
 
 class CSVDispatcher:
-    def __init__(self, client_id, rabbit_ip, matches_queue, matches_path, players_queue, players_path, batch_size):
+    def __init__(self, client_id, rabbit_ip, matches_fanout, matches_path, players_fanout, players_path, batch_size):
         self.rabbit_ip = rabbit_ip
         self.client_id = client_id
         self.able_to_upload = False
@@ -20,15 +20,17 @@ class CSVDispatcher:
 
         self.corr_id = str(uuid.uuid4())
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(self.rabbit_ip)
-        self.request_queue = RabbitUtils.setup_queue(self.channel, "aoe2-requests")
+        self.request_queue_name = "aoe2-requests"
+        RabbitUtils.setup_queue(self.channel, self.request_queue_name)
         
         self.callback_queue = RabbitUtils.setup_anonym_input_queue(self.channel, self.on_response)
         
-        self.matches_proc = Process(target=self.upload_csv, args=(matches_path, matches_queue, MatchEncoderDecoder))
-        self.players_proc = Process(target=self.upload_csv, args=(players_path, players_queue, PlayerEncoderDecoder))
+        self.matches_proc = Process(target=self.upload_csv, args=(matches_path, matches_fanout, MatchEncoderDecoder))
+        self.players_proc = Process(target=self.upload_csv, args=(players_path, players_fanout, PlayerEncoderDecoder))
 
     def run(self):
-        RabbitUtils.send_to_queue(self.channel, self.request_queue, f"{self.client_id}", self.corr_id, self.callback_queue)
+        logging.info(f"Enviando {self.client_id} a la cola de requests")
+        RabbitUtils.send_to_queue(self.channel, self.request_queue_name, f"{self.client_id}", self.corr_id, self.callback_queue)
 
         # while self.response is None:
         #     self.connection.process_data_events()
@@ -49,9 +51,9 @@ class CSVDispatcher:
 
         ch.stop_consuming()         
             
-    def upload_csv(self, csv_path, queue_name, decoder):
+    def upload_csv(self, csv_path, fanout_name, decoder):
         connection, channel = RabbitUtils.setup_connection_with_channel(self.rabbit_ip)
-        RabbitUtils.setup_queue(channel, queue_name)
+        RabbitUtils.setup_fanout_exchange(channel, fanout_name)
         row_number = 1
 
         with open(csv_path, newline='') as csvf:
@@ -66,8 +68,8 @@ class CSVDispatcher:
 
                 if count >= self.BATCH_SIZE:
                     serialized = BatchEncoderDecoder.encode_batch(batch)
-                    channel.basic_publish(exchange='', routing_key=queue_name, body=serialized)
-                    logging.info(f"{queue_name}: Sent batch {serialized[:25]}...")
+                    channel.basic_publish(exchange=fanout_name, routing_key='', body=serialized)
+                    logging.info(f"{fanout_name}: Sent batch {serialized[:25]}...")
                     batch = []
                     count = 0
                     # time.sleep(5)
@@ -76,11 +78,12 @@ class CSVDispatcher:
 
             if count > 0:
                 serialized = BatchEncoderDecoder.encode_batch(batch)
-                channel.basic_publish(exchange='', routing_key=queue_name, body=serialized)
-                logging.info(f"{queue_name}: Sent last missing batch {serialized[:25]}...")
+                channel.basic_publish(exchange=fanout_name, routing_key='', body=serialized)
+                logging.info(f"{fanout_name}: Sent last missing batch {serialized[:25]}...")
 
-        logging.info(f"{queue_name}: Reached EOF, sending sentinel")
+        logging.info(f"{fanout_name}: Reached EOF, sending sentinel")
         sentinel_batch = BatchEncoderDecoder.create_encoded_sentinel()
-        channel.basic_publish(exchange='', routing_key=queue_name, body=sentinel_batch)
+        channel.basic_publish(exchange=fanout_name, routing_key='', body=sentinel_batch)
+
 
         connection.close()

@@ -51,12 +51,12 @@ class Query1Controller:
             logging.info(f"FILTER QUERY1: Received sentinel! Shutting down...")
             # mandar a cola final
             self.channel.basic_publish(
-                exchange='', routing_key=self.output_queue_name, body=f"INICIO")
+                exchange='', routing_key=self.output_queue_name, body="[[INICIO]]")
             for serialized_match in self.filtered_rows:
                 self.channel.basic_publish(
                     exchange='', routing_key=self.output_queue_name, body=serialized_match)
             self.channel.basic_publish(
-                exchange='', routing_key=self.output_queue_name, body=f"FIN")
+                exchange='', routing_key=self.output_queue_name, body=f"[[FIN]]")
             raise KeyboardInterrupt
 
         # TODO: hacer la logica para que borre duplicados y mande al final

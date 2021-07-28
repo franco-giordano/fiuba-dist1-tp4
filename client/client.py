@@ -3,47 +3,50 @@ from src.csv_dispatcher import CSVDispatcher
 from src.results_controller import ResultsController
 from multiprocessing import Process
 
+
 def main():
-	config_params = setup('config.ini',
-		{'INPUT_MATCHES_QUEUE': False,
-		'RABBIT_IP': False,
-		'INPUT_PLAYERS_QUEUE': False,
-		'MATCHES_PATH': False,
-		'PLAYERS_PATH': False,
-		'BATCH_SIZE': True,
-		'RESULTS_1': False,
-		'RESULTS_2': False,
-		'RESULTS_3': False,
-		'RESULTS_4': False,
-		'OUTPUT_FILE': False})
+    config_params = setup('config.ini',
+                          {'INPUT_MATCHES_QUEUE': False,
+                           'RABBIT_IP': False,
+                           'INPUT_PLAYERS_QUEUE': False,
+                           'MATCHES_PATH': False,
+                           'PLAYERS_PATH': False,
+                           'BATCH_SIZE': True,
+                           'ID': False
+                           })
 
-	rabbit_ip = config_params['RABBIT_IP']
-	matches_queue = config_params['INPUT_MATCHES_QUEUE']
-	matches_path = config_params['MATCHES_PATH']
-	players_queue = config_params['INPUT_PLAYERS_QUEUE']
-	players_path = config_params['PLAYERS_PATH']
-	batch_size = config_params['BATCH_SIZE']
+    node_id = config_params['ID']
+    rabbit_ip = config_params['RABBIT_IP']
+    matches_queue = config_params['INPUT_MATCHES_QUEUE']
+    matches_path = config_params['MATCHES_PATH']
+    players_queue = config_params['INPUT_PLAYERS_QUEUE']
+    players_path = config_params['PLAYERS_PATH']
+    batch_size = config_params['BATCH_SIZE']
 
-	dispatcher = CSVDispatcher(rabbit_ip, matches_queue, matches_path, players_queue, players_path, batch_size)
+    dispatcher = CSVDispatcher(node_id, rabbit_ip, matches_queue,
+                               matches_path, players_queue, players_path, batch_size)
 
-	proc_res = Process(target=results_init, args=(config_params,))
-	proc_res.start()
+    results_controllers = [Process(target=results_init, args=(
+        config_params, i)) for i in range(1, 5)]
 
-	dispatcher.run()
+    for handler in results_controllers:
+        handler.start()
 
-	proc_res.join()
+    dispatcher.run()
 
-def results_init(config_params):
-	rabbit_ip = config_params['RABBIT_IP']
-	results1 = config_params['RESULTS_1']
-	results2 = config_params['RESULTS_2']
-	results3 = config_params['RESULTS_3']
-	results4 = config_params['RESULTS_4']
-	output_file_name = config_params['OUTPUT_FILE']
+    for handler in results_controllers:
+        handler.join()
 
-	with open(f'/results/{output_file_name}', 'w') as res_file:
-		results = ResultsController(rabbit_ip, results1, results2, results3, results4, res_file)
-		results.run()
 
-if __name__== "__main__":
-	main()
+def results_init(config_params, controller_index):
+    rabbit_ip = config_params['RABBIT_IP']
+    node_id = config_params['ID']
+    partial_persistance_filename = f"/persistance/{node_id}-persistance-query{controller_index}"
+    result_file = f'/persistance/{node_id}-output{controller_index}'
+    results = ResultsController(controller_index, rabbit_ip, f"output-query{controller_index}",
+                                partial_persistance_filename, result_file)
+    results.run()
+
+
+if __name__ == "__main__":
+    main()

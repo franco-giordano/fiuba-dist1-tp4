@@ -14,7 +14,7 @@ from common.models.persistor import Persistor
 # ACK al mensaje de request cliente - si el cliente recibe algún reply inesperado, chequea el correlation id :) . (Usar reply_to para no tener una unica cola de vuelta)
 
 class CliManagerController:
-    def __init__(self, rabbit_ip, requests_queue_name, sys_status_filename, last_row_filename):
+    def __init__(self, rabbit_ip, requests_queue_name, sys_status_filename):
         self.requests_queue_name = requests_queue_name
         
         self.persistor_state = Persistor(sys_status_filename)

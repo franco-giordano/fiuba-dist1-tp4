@@ -11,7 +11,6 @@ def main():
                            'INPUT_PLAYERS_QUEUE': False,
                            'MATCHES_PATH': False,
                            'PLAYERS_PATH': False,
-                           'BATCH_SIZE': True,
                            'ID': False
                            })
 
@@ -21,7 +20,7 @@ def main():
     matches_path = config_params['MATCHES_PATH']
     players_queue = config_params['INPUT_PLAYERS_QUEUE']
     players_path = config_params['PLAYERS_PATH']
-    batch_size = config_params['BATCH_SIZE']
+    batch_size = 1 # config_params['BATCH_SIZE']
 
     dispatcher = CSVDispatcher(node_id, rabbit_ip, matches_queue,
                                matches_path, players_queue, players_path, batch_size)

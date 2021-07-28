@@ -8,15 +8,13 @@ from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 from pika import BasicProperties
 
 class MatchesJoiner:
-    def __init__(self, id_joiner, channel, output_exchange_name, next_reducers_amount, force_send_on_first_join=False, persistance_file):
+    def __init__(self, id_joiner, channel, output_exchange_name, next_reducers_amount, persistance_file):
         self.channel = channel
         self.output_exchange_name = output_exchange_name
         self.id_joiner = id_joiner
         self.current_matches = {}
         self.persistance_file = persistance_file
         self.shard_key_getter = ShardKeyGetter(next_reducers_amount)
-        self.force_send_on_first_join = force_send_on_first_join
-
 
         self.persistor = Persistor(self.persistance_file)
 

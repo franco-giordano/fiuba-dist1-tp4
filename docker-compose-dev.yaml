@@ -1,43 +1,43 @@
 version: '3'
 services:
-  master-0:
-    stop_signal: SIGINT
-    container_name: master-0
-    image: master:latest
-    environment:
-      - PYTHONUNBUFFERED=1
-      - MY_MASTER_ID=0
-    networks:
-      - testing_net
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./persistance/master/events.log:/persistance/events.log
+  # master-0:
+  #   stop_signal: SIGINT
+  #   container_name: master-0
+  #   image: master:latest
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - MY_MASTER_ID=0
+  #   networks:
+  #     - testing_net
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./persistance/master/events.log:/persistance/events.log
   
-  master-1:
-    stop_signal: SIGINT
-    container_name: master-1
-    image: master:latest
-    environment:
-      - PYTHONUNBUFFERED=1
-      - MY_MASTER_ID=1
-    networks:
-      - testing_net
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./persistance/master/events.log:/persistance/events.log
+  # master-1:
+  #   stop_signal: SIGINT
+  #   container_name: master-1
+  #   image: master:latest
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - MY_MASTER_ID=1
+  #   networks:
+  #     - testing_net
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./persistance/master/events.log:/persistance/events.log
 
-  master-2:
-    stop_signal: SIGINT
-    container_name: master-2
-    image: master:latest
-    environment:
-      - PYTHONUNBUFFERED=1
-      - MY_MASTER_ID=2
-    networks:
-      - testing_net
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./persistance/master/events.log:/persistance/events.log
+  # master-2:
+  #   stop_signal: SIGINT
+  #   container_name: master-2
+  #   image: master:latest
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - MY_MASTER_ID=2
+  #   networks:
+  #     - testing_net
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./persistance/master/events.log:/persistance/events.log
 
   client-manager:
     stop_signal: SIGINT
@@ -64,6 +64,41 @@ services:
     volumes:
       - ./persistance/filter-q1:/persistance
 
+  exchanger-q3:
+    stop_signal: SIGINT
+    container_name: exchanger-q3
+    image: exchanger:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q3
+      - NEXT_REDUCERS_AMOUNT=5
+    networks:
+      - testing_net
+
+  filter-by-ladder:
+    stop_signal: SIGINT
+    container_name: filter-by-ladder
+    image: filter-by-ladder:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - testing_net
+
+  filter-matches-q3:
+    stop_signal: SIGINT
+    container_name: filter-matches-q3
+    image: filter-matches-q3:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - filter-by-ladder
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NEXT_REDUCERS_AMOUNT=1
+    networks:
+      - testing_net
+
   join-node-q3-0:
     stop_signal: SIGINT
     container_name: join-node-q3-0
@@ -74,10 +109,40 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - JOINER_ID=0
+      - NEXT_REDUCERS_AMOUNT=1
+      - REDUCERS_AMOUNT=1
     networks:
       - testing_net
     volumes:
       - "./persistance/join-nodes-q3:/persistance"
+
+  group-by-nodes-q3:
+    stop_signal: SIGINT
+    container_name: group-by-nodes-q3
+    image: group-by-nodes-q3:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - join-node-q3-0
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TOTAL_INCOMING_SENTINELS=1
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/group-by-node-q3:/persistance"
+
+  final-accumulator-q3:
+    stop_signal: SIGINT
+    container_name: final-accumulator-q3
+    image: final-accumulator-q3:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - group-by-nodes-q3
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TOTAL_INCOMING_SENTINELS=1
+    networks:
+      - testing_net
     
 
 networks:

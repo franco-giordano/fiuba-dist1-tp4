@@ -86,7 +86,7 @@ class AccumulatorController:
             self.data_per_grouper[from_id].add(serialized_data)
 
             # persisto
-            self._persistor_for_grouper().persist(data)
+            self._persistor_for_grouper(from_id).persist(data)
 
         RabbitUtils.ack_from_method(self.channel, method)
 
@@ -100,12 +100,8 @@ class AccumulatorController:
 
         return count == self.groupers_amount
 
-    def _reset_variables(self):
-        for key in self.grouper_state_machine:
-            self.grouper_state_machine[key] = 'WAITING_FOR_INICIO'
-
     def _reload_persisted_state(self):
-        for persistor in self.persistors:
+        for from_id, persistor in self.persistors.items():
             prev_data = persistor.read()
             for row in prev_data:
                 if row == Persistor.CHECK_GUARD:

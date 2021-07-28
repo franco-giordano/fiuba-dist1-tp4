@@ -72,7 +72,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - OUTPUT_EXCHANGE_NAME=sharded-by-match-q3
-      - NEXT_REDUCERS_AMOUNT=5
+      - NEXT_REDUCERS_AMOUNT=1
     networks:
       - testing_net
 
@@ -116,9 +116,9 @@ services:
     volumes:
       - "./persistance/join-nodes-q3:/persistance"
 
-  group-by-nodes-q3:
+  group-by-node-q3-0:
     stop_signal: SIGINT
-    container_name: group-by-nodes-q3
+    container_name: group-by-node-q3-0
     image: group-by-nodes-q3:latest
     entrypoint: python3 /main.py
     depends_on:
@@ -126,10 +126,11 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - TOTAL_INCOMING_SENTINELS=1
+      - GROUPER_ID=0
     networks:
       - testing_net
     volumes:
-      - "./persistance/group-by-node-q3:/persistance"
+      - "./persistance/group-by-nodes-q3:/persistance"
 
   final-accumulator-q3:
     stop_signal: SIGINT
@@ -137,12 +138,14 @@ services:
     image: final-accumulator-q3:latest
     entrypoint: python3 /main.py
     depends_on:
-      - group-by-nodes-q3
+      - group-by-node-q3-0
     environment:
       - PYTHONUNBUFFERED=1
       - TOTAL_INCOMING_SENTINELS=1
     networks:
       - testing_net
+    volumes:
+      - ./persistance/accumulator-q3:/persistance
     
 
 networks:

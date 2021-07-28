@@ -1,175 +1,37 @@
 make nodes-down; make nodes-up && make nodes-logs
-make[1]: Entering directory '/home/julian/FIUBA/dist1/fiuba-dist1-tp4'
+make[1]: Entering directory '/home/frank/Documents/GitProjects/fiuba-dist1-tp4'
 docker-compose -f docker-compose-dev.yaml stop -t 10
 docker-compose -f docker-compose-dev.yaml down
-make[1]: Leaving directory '/home/julian/FIUBA/dist1/fiuba-dist1-tp4'
-make[1]: Entering directory '/home/julian/FIUBA/dist1/fiuba-dist1-tp4'
+make[1]: Leaving directory '/home/frank/Documents/GitProjects/fiuba-dist1-tp4'
+make[1]: Entering directory '/home/frank/Documents/GitProjects/fiuba-dist1-tp4'
 docker build -f ./client-manager/Dockerfile -t "client-manager:latest" .
-Sending build context to Docker daemon  1.082MB
+Sending build context to Docker daemon  410.4MB
 Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
+ ---> c816ce5cd6d1
 Step 2/4 : COPY common /common
- ---> 982334348e05
+ ---> Using cache
+ ---> 6a8e8229d4da
 Step 3/4 : COPY client-manager /
- ---> 1dd9f62d00e6
+ ---> Using cache
+ ---> 09cb866ace1c
 Step 4/4 : CMD ["python3", "./main.py"]
- ---> Running in 6b329e299ec5
-Removing intermediate container 6b329e299ec5
- ---> c3860fe2a282
-Successfully built c3860fe2a282
+ ---> Using cache
+ ---> 26cbdf9d217d
+Successfully built 26cbdf9d217d
 Successfully tagged client-manager:latest
 docker build -f ./filter-q1/Dockerfile -t "filter-q1:latest" .
-Sending build context to Docker daemon  1.082MB
+Sending build context to Docker daemon  410.4MB
 Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
+ ---> c816ce5cd6d1
 Step 2/4 : COPY common /common
  ---> Using cache
- ---> 982334348e05
+ ---> 6a8e8229d4da
 Step 3/4 : COPY filter-q1 /
- ---> 3612ab1b29b9
+ ---> Using cache
+ ---> 5c892b23817b
 Step 4/4 : CMD ["python", "./main.py"]
- ---> Running in 829d5ea44394
-Removing intermediate container 829d5ea44394
- ---> 2f0aafe03852
-Successfully built 2f0aafe03852
+ ---> Using cache
+ ---> 31e94268255f
+Successfully built 31e94268255f
 Successfully tagged filter-q1:latest
 docker build -f ./exchanger/Dockerfile -t "exchanger:latest" .
-Sending build context to Docker daemon  1.083MB
-Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
-Step 2/4 : COPY common /common
- ---> Using cache
- ---> 982334348e05
-Step 3/4 : COPY exchanger /
- ---> aa05cf78db16
-Step 4/4 : CMD ["python3", "./main.py"]
- ---> Running in a7bb4f436296
-Removing intermediate container a7bb4f436296
- ---> 5fce39470644
-Successfully built 5fce39470644
-Successfully tagged exchanger:latest
-# docker build -f ./group-by-nodes-q2/Dockerfile -t "group-by-nodes-q2:latest" .
-docker build -f ./filter-by-ladder/Dockerfile -t "filter-by-ladder:latest" .
-Sending build context to Docker daemon  1.083MB
-Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
-Step 2/4 : COPY common /common
- ---> Using cache
- ---> 982334348e05
-Step 3/4 : COPY filter-by-ladder /
- ---> 64461d446a12
-Step 4/4 : CMD ["python", "./main.py"]
- ---> Running in 34be35751e09
-Removing intermediate container 34be35751e09
- ---> 0ef6c6d97083
-Successfully built 0ef6c6d97083
-Successfully tagged filter-by-ladder:latest
-docker build -f ./filter-matches-q3/Dockerfile -t "filter-matches-q3:latest" .
-Sending build context to Docker daemon  1.084MB
-Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
-Step 2/4 : COPY common /common
- ---> Using cache
- ---> 982334348e05
-Step 3/4 : COPY filter-matches-q3 /
- ---> 98d1274665c6
-Step 4/4 : CMD ["python", "./main.py"]
- ---> Running in defadc422ad2
-Removing intermediate container defadc422ad2
- ---> 9734f88e840b
-Successfully built 9734f88e840b
-Successfully tagged filter-matches-q3:latest
-# docker build -f ./filter-pro-players-q4/Dockerfile -t "filter-pro-players-q4:latest" .
-docker build -f ./join-nodes-q3/Dockerfile -t "join-nodes-q3:latest" .
-Sending build context to Docker daemon  1.085MB
-Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
-Step 2/4 : COPY common /common
- ---> Using cache
- ---> 982334348e05
-Step 3/4 : COPY join-nodes-q3 /
- ---> 10aca088e8ec
-Step 4/4 : CMD ["python3", "./main.py"]
- ---> Running in 152cd728724c
-Removing intermediate container 152cd728724c
- ---> d93d4567be42
-Successfully built d93d4567be42
-Successfully tagged join-nodes-q3:latest
-docker build -f ./group-by-nodes-q3/Dockerfile -t "group-by-nodes-q3:latest" .
-Sending build context to Docker daemon  1.085MB
-Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
-Step 2/4 : COPY common /common
- ---> Using cache
- ---> 982334348e05
-Step 3/4 : COPY group-by-nodes-q3 /
- ---> 5384fade339d
-Step 4/4 : CMD ["python3", "./main.py"]
- ---> Running in 91c666201ee8
-Removing intermediate container 91c666201ee8
- ---> da1d13493013
-Successfully built da1d13493013
-Successfully tagged group-by-nodes-q3:latest
-# docker build -f ./filter-matches-q4/Dockerfile -t "filter-matches-q4:latest" .
-# docker build -f ./join-nodes-q4/Dockerfile -t "join-nodes-q4:latest" .
-# docker build -f ./group-by-nodes-q4/Dockerfile -t "group-by-nodes-q4:latest" .
-docker build -f ./final-accumulator-q3/Dockerfile -t "final-accumulator-q3:latest" .
-Sending build context to Docker daemon  1.086MB
-Step 1/4 : FROM rabbitmq-python-base:0.0.1
- ---> 4f6e7575bc98
-Step 2/4 : COPY common /common
- ---> Using cache
- ---> 982334348e05
-Step 3/4 : COPY final-accumulator-q3 /
- ---> 3a78bb819de4
-Step 4/4 : CMD ["python", "./main.py"]
- ---> Running in 7df3a93123e2
-Removing intermediate container 7df3a93123e2
- ---> c12fb5bf0f43
-Successfully built c12fb5bf0f43
-Successfully tagged final-accumulator-q3:latest
-# docker build -f ./final-accumulator-q4/Dockerfile -t "final-accumulator-q4:latest" .
-# docker build -f ./master/Dockerfile -t "master:latest" .
-docker-compose -f docker-compose-dev.yaml up -d --build
-make[1]: Leaving directory '/home/julian/FIUBA/dist1/fiuba-dist1-tp4'
-make[1]: Entering directory '/home/julian/FIUBA/dist1/fiuba-dist1-tp4'
-docker-compose -f docker-compose-dev.yaml logs -f
-Attaching to final-accumulator-q3, group-by-nodes-q3, join-node-q3-0, filter-matches-q3, filter-q1, exchanger-q3, client-manager, filter-by-ladder
-[36mclient-manager          |[0m 2021-07-28 23:31:29 INFO     CLIMANAGER: Waiting for messages. To exit press CTRL+C
-[33mexchanger-q3            |[0m 2021-07-28 23:31:31 INFO     SHARD EXCHANGE: Waiting for messages. To exit press CTRL+C
-[32mfilter-by-ladder        |[0m 2021-07-28 23:31:31 INFO     FILTER BY LADDER: Waiting for messages. To exit press CTRL+C
-[35mfilter-matches-q3       |[0m 2021-07-28 23:31:35 INFO     FILTER MATCHES: Waiting for messages. To exit press CTRL+C
-[35mfilter-matches-q3       |[0m 2021-07-28 23:31:35 INFO     FILTER MATCHES: Waiting for messages. To exit press CTRL+C
-[35mfilter-matches-q3       |[0m 2021-07-28 23:31:35 INFO     FILTER MATCHES: Waiting for messages. To exit press CTRL+C
-[34mfilter-q1               |[0m 2021-07-28 23:31:30 INFO     FILTER QUERY1: rebuilt set now is {'{"token": "FBRdtKo3LN4jKu7r", "winning_team": 1, "mirror": false, "ladder": "RM_TEAM", "patch": 39515, "average_rating": 2108, "map": "megarandom", "map_size": "medium", "num_players": 4, "server": "eastus", "duration": 21210, "row_number": 4244}'}
-[34mfilter-q1               |[0m 2021-07-28 23:31:30 INFO     FILTER QUERY1: Waiting for messages. To exit press CTRL+C
-[32;1mjoin-node-q3-0          |[0m 2021-07-28 23:31:38 INFO     SHARDED JOINER 0: Waiting for messages. To exit press CTRL+C
-[33;1mgroup-by-nodes-q3       |[0m Traceback (most recent call last):
-[33;1mgroup-by-nodes-q3       |[0m   File "/main.py", line 36, in <module>
-[33;1mgroup-by-nodes-q3       |[0m     main()
-[33;1mgroup-by-nodes-q3       |[0m   File "/main.py", line 18, in main
-[33;1mgroup-by-nodes-q3       |[0m     reducer_init(my_id, config_params)
-[33;1mgroup-by-nodes-q3       |[0m   File "/main.py", line 31, in reducer_init
-[33;1mgroup-by-nodes-q3       |[0m     total_incoming_sentinels, persistance_filename)
-[33;1mgroup-by-nodes-q3       |[0m   File "/common/controllers/sharded_grouper_controller.py", line 26, in __init__
-[33;1mgroup-by-nodes-q3       |[0m     self.joiners_amount, persistance_filename)
-[33;1mgroup-by-nodes-q3       |[0m   File "/common/models/civilizations_grouper.py", line 19, in __init__
-[33;1mgroup-by-nodes-q3       |[0m     self._reload_persisted_state()
-[33;1mgroup-by-nodes-q3       |[0m   File "/common/models/civilizations_grouper.py", line 29, in _reload_persisted_state
-[33;1mgroup-by-nodes-q3       |[0m     for from_id, persistor in self.persistors.items():
-[33;1mgroup-by-nodes-q3       |[0m AttributeError: 'CivilizationsGrouper' object has no attribute 'persistors'
-[36;1mfinal-accumulator-q3    |[0m Traceback (most recent call last):
-[36;1mfinal-accumulator-q3    |[0m   File "/main.py", line 22, in <module>
-[36;1mfinal-accumulator-q3    |[0m     main()
-[36;1mfinal-accumulator-q3    |[0m   File "/main.py", line 18, in main
-[36;1mfinal-accumulator-q3    |[0m     output_queue, total_incoming_sentinels, accum)
-[36;1mfinal-accumulator-q3    |[0m   File "/common/controllers/accumulator_controller.py", line 31, in __init__
-[36;1mfinal-accumulator-q3    |[0m     for key in range(groupers_amount)}
-[36;1mfinal-accumulator-q3    |[0m   File "/common/controllers/accumulator_controller.py", line 31, in <dictcomp>
-[36;1mfinal-accumulator-q3    |[0m     for key in range(groupers_amount)}
-[36;1mfinal-accumulator-q3    |[0m   File "/common/models/persistor.py", line 10, in __init__
-[36;1mfinal-accumulator-q3    |[0m     os.mknod(file_name)        
-[36;1mfinal-accumulator-q3    |[0m FileNotFoundError: [Errno 2] No such file or directory
-[33;1mgroup-by-nodes-q3 exited with code 1
-[0m[36;1mfinal-accumulator-q3 exited with code 1
-[0m

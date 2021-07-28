@@ -16,14 +16,13 @@ class CivilizationsGrouper:
         self.aggregator = aggregator
         self.joiners_amount = joiners_amount
 
-        self._reload_persisted_state()
-
         self.data_per_joiner = {}
         self.joiner_state_machine = {key: 'WAITING_FOR_INICIO'
                                      for key in range(joiners_amount)}
 
-        self.persistors = {key: Persistor(f'/persistance/partial-{key}.txt')
+        self.persistors = {key: Persistor(f'{persistance_file}-{self.id_grouper}-{key}')
                            for key in range(self.joiners_amount)}
+        self._reload_persisted_state()
 
     def _reload_persisted_state(self):
         for from_id, persistor in self.persistors.items():

@@ -1,5 +1,7 @@
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 import logging
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
+from common.utils.rabbit_utils import RabbitUtils
 
 class Top5CountsAccumulator:
     def __init__(self):
@@ -13,10 +15,18 @@ class Top5CountsAccumulator:
         self.accum[civ] = current_usage_count
 
     def flush_results(self, channel, queue_name):
+        ini_msg = ApiPacketsEncoder.create_inicio_pkt()
+        RabbitUtils.send_to_queue(channel, queue_name, ini_msg)
+
         top_5_civs = sorted(self.accum, key=self.accum.get, reverse=True)[:5]
         logging.info(f"TOP 5 ACCUMULATOR: Found top 5 civs {top_5_civs}")
         for civ in top_5_civs:
             result = [civ, self.accum[civ]]
             serialized = BatchEncoderDecoder.encode_batch(result)
             logging.info(f"TOP 5 ACCUMULATOR: Sending result {serialized}")
-            channel.basic_publish(exchange='', routing_key=queue_name, body=serialized)
+            RabbitUtils.send_to_queue(channel, queue_name, serialized)
+
+        fin_msg = ApiPacketsEncoder.create_fin_pkt()
+        RabbitUtils.send_to_queue(channel, queue_name, fin_msg)
+
+        self.accum = {}

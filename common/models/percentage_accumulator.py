@@ -27,3 +27,5 @@ class PercentageAccumulator:
 
         fin_msg = ApiPacketsEncoder.create_fin_pkt()
         RabbitUtils.send_to_queue(channel, queue_name, fin_msg)
+
+        self.accum = {}

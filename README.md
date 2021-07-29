@@ -2,7 +2,7 @@
 
 ## Bootstraping
 
-1. Place CSVs in a /sources folder
+1. Place CSVs in `~/fiuba-dist1-tp4` (or change mount point in `run-cli.sh`)
 2. Build RabbitMQ image
 ```bash
 cd base-images

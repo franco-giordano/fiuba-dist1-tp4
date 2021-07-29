@@ -26,5 +26,5 @@ def main():
                                        output_queue, pongs_queue, total_incoming_sentinels, accum)
     controller.run()
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()

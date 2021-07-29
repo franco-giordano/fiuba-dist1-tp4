@@ -28,7 +28,7 @@ rabbit-up:
 .PHONY: rabbit-up
 
 rabbit-down:
-	docker-compose -f docker-compose-rabbit.yaml stop -t 10
+	docker-compose -f docker-compose-rabbit.yaml stop -t 5
 	docker-compose -f docker-compose-rabbit.yaml down
 .PHONY: rabbit-down
 
@@ -41,7 +41,7 @@ nodes-up: docker-image
 .PHONY: nodes-up
 
 nodes-down:
-	docker-compose -f docker-compose-dev.yaml stop -t 10
+	docker-compose -f docker-compose-dev.yaml stop -t 5
 	docker-compose -f docker-compose-dev.yaml down
 .PHONY: nodes-down
 

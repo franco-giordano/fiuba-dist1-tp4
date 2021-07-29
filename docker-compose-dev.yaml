@@ -229,8 +229,6 @@ services:
     container_name: final-accumulator-q3
     image: final-accumulator-q3:latest
     entrypoint: python3 /main.py
-    depends_on:
-      - group-by-node-q3-0
     environment:
       - PYTHONUNBUFFERED=1
       - TOTAL_INCOMING_SENTINELS=1
@@ -245,8 +243,6 @@ services:
     container_name: final-accumulator-q4
     image: final-accumulator-q4:latest
     entrypoint: python3 /main.py
-    depends_on:
-      - group-by-node-q4-0
     environment:
       - PYTHONUNBUFFERED=1
       - TOTAL_INCOMING_SENTINELS=1

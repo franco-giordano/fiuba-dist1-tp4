@@ -17,10 +17,10 @@ class CivilizationsGrouper:
         self.joiners_amount = joiners_amount
 
         self.data_per_joiner = {}
-        self.joiner_state_machine = {key: 'WAITING_FOR_INICIO'
+        self.joiner_state_machine = {str(key): 'WAITING_FOR_INICIO'
                                      for key in range(joiners_amount)}
 
-        self.persistors = {key: Persistor(f'{persistance_file}-{self.id_grouper}-{key}')
+        self.persistors = {str(key): Persistor(f'{persistance_file}-{self.id_grouper}-{key}')
                            for key in range(self.joiners_amount)}
         self._reload_persisted_state()
 
@@ -120,8 +120,8 @@ class CivilizationsGrouper:
             serialized = BatchEncoderDecoder.encode_batch([civ, results])
             RabbitUtils.send_to_queue(self.channel, self.output_queue_name, serialized, headers={'id': self.id_grouper})
 
-        for persistor in self.persistors:
-            persistor.persist("FINISH")
+        for k in self.persistors:
+            self.persistors[k].persist("FINISH")
 
         fin_msg = ApiPacketsEncoder.create_fin_pkt()
         RabbitUtils.send_to_queue(self.channel, self.output_queue_name, fin_msg, headers={'id': self.id_grouper})
@@ -143,7 +143,7 @@ class CivilizationsGrouper:
             self.data_per_joiner[k] = {}
 
     def _wipe_persistance(self):
-        for persistor in self.persistors:
+        for persistor in self.persistors.values():
             persistor.wipe()
 
 

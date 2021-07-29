@@ -16,18 +16,18 @@ class AccumulatorController:
 
         # input exchange
         RabbitUtils.setup_input_queue(
-            self.channel, self.input_queue_name, self._callback)
+            self.channel, self.input_queue_name, self._callback, auto_ack=False)
 
         # output queue
         RabbitUtils.setup_queue(self.channel, self.output_queue_name)
 
         self.final_accumulator = accumulator
 
-        self.data_per_grouper = {key: set() for key in range(groupers_amount)}
-        self.grouper_state_machine = {key: 'WAITING_FOR_INICIO'
+        self.data_per_grouper = {str(key): set() for key in range(groupers_amount)}
+        self.grouper_state_machine = {str(key): 'WAITING_FOR_INICIO'
                                       for key in range(groupers_amount)}
 
-        self.persistors = {key: Persistor(f'/persistance/partial-{key}.txt')
+        self.persistors = {str(key): Persistor(f'/persistance/partial-{key}.txt')
                            for key in range(groupers_amount)}
 
         # WAITING_FOR_INICIO --inicio--> RECVING_ROWS --fin--> FIN_RECVED
@@ -134,5 +134,5 @@ class AccumulatorController:
             self.data_per_grouper[k] = set()
 
     def _wipe_persistance(self):
-        for persistor in self.persistors:
+        for persistor in self.persistors.values():
             persistor.wipe()

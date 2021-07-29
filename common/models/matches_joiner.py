@@ -40,7 +40,7 @@ class MatchesJoiner:
         joined_info = self.current_matches.get(tkn, [None, []])
         joined_info[1].append(player)
         
-        self.current_matches[token] = joined_info
+        self.current_matches[tkn] = joined_info
         self.persistor.persist(json.dumps(player))
 
     def _add_match(self, match):
@@ -49,7 +49,7 @@ class MatchesJoiner:
         assert(joined_info[0] is None)
         joined_info[0] = match
         
-        self.current_matches[token] = joined_info
+        self.current_matches[tkn] = joined_info
         self.persistor.persist(json.dumps(match))
 
         # En algun momento aca hay que mandar el INICIO, pero no tengo idea cuando es el primer mensaje con esta logica

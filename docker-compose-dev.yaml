@@ -110,7 +110,6 @@ services:
       - PYTHONUNBUFFERED=1
       - JOINER_ID=0
       - NEXT_REDUCERS_AMOUNT=1
-      - REDUCERS_AMOUNT=1
     networks:
       - testing_net
     volumes:

@@ -7,13 +7,11 @@ def main():
                           {'SHARD_EXCHANGE_NAME': False,
                            'OUTPUT_EXCHANGE_NAME': False,
                            'RABBIT_IP': False,
-                           'REDUCERS_AMOUNT': True,
                            'NEXT_REDUCERS_AMOUNT': True,
                            'TOTAL_INCOMING_SENTINELS': True,
                            'JOINER_ID': True,
                            'SENTINELS_FILE_BASE': False,
                            'PERSISTANCE_FILE_BASE': False})
-    reducers_amount = config_params['REDUCERS_AMOUNT']
     my_id = config_params['JOINER_ID']
     reducer_init(my_id, config_params)
 

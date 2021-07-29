@@ -27,10 +27,6 @@ class CivilizationsGrouper:
     def _reload_persisted_state(self):
         for from_id, persistor in self.persistors.items():
             prev_data = persistor.read()
-            # for event in persisted_state:
-            #     if event != Persistor.CHECK_GUARD:
-            #         player = json.loads(event)
-            #         self._add_player(player)
             for row in prev_data:
                 if row == Persistor.CHECK_GUARD:
                     continue
@@ -81,20 +77,6 @@ class CivilizationsGrouper:
             self._add_player(from_id, player)
             serialized_player = ObjectEncoderDecoder.encode_obj_str(player)
             self.persistors[from_id].persist(serialized_player)
-
-    # def recved_all_sentinels(self):
-    #     logging.info(f'CIVS GROUPER: Flushing all grouped civs')
-    #
-    #     if "FINISH\n" in self.persistor.read() or not self.persistor.read():
-    #         # Ignorar el sentinel directamente
-    #         self.persistor.wipe()
-    #         return
-    #
-    #     self.flush_results()
-    #     logging.info(f'CIV GROUPER: Sending sentinel...')
-
-    # sentinel = BatchEncoderDecoder.create_encoded_sentinel()
-    # self.channel.basic_publish(exchange='', routing_key=self.output_queue_name, body=sentinel)
 
     def flush_results(self):
         civs_from_all_joiners = {}

@@ -20,7 +20,7 @@ docker-image:
 	docker build -f ./final-accumulator-q3/Dockerfile -t "final-accumulator-q3:latest" .
 	docker build -f ./final-accumulator-q4/Dockerfile -t "final-accumulator-q4:latest" .
 	docker build -f ./group-by-nodes-q2/Dockerfile -t "group-by-nodes-q2:latest" .
-	# docker build -f ./master/Dockerfile -t "master:latest" .
+	docker build -f ./master/Dockerfile -t "master:latest" .
 .PHONY: docker-image
 
 rabbit-up:

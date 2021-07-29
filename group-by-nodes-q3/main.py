@@ -11,7 +11,9 @@ def main():
                            'REDUCERS_AMOUNT': True,
                            'GROUPER_ID': True,
                            'TOTAL_INCOMING_SENTINELS': True,
-                           'PERSISTANCE_FILENAME': False})
+                           'PERSISTANCE_FILENAME': False,
+                           'PONGS_QUEUE': False,
+                           'NODE_NAME': False})
 
     my_id = config_params['GROUPER_ID']
 
@@ -24,10 +26,12 @@ def reducer_init(proc_id, config_params):
     output_queue_name = config_params['OUTPUT_QUEUE_NAME']
     total_incoming_sentinels = config_params['TOTAL_INCOMING_SENTINELS']
     persistance_filename = config_params['PERSISTANCE_FILENAME']
+    pongs_queue = config_params['PONGS_QUEUE']
+    node_name = config_params['NODE_NAME']
 
     shard_key = str(proc_id)
     aggregator = VictoriesTotalAggregator()
-    grouper = ShardedGrouperController(rabbit_ip, shard_exchange_name, output_queue_name, shard_key, aggregator,
+    grouper = ShardedGrouperController(node_name, rabbit_ip, shard_exchange_name, output_queue_name, pongs_queue, shard_key, aggregator,
                                        total_incoming_sentinels, persistance_filename)
     grouper.run()
 

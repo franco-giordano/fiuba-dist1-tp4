@@ -1,25 +1,39 @@
+import logging
+from multiprocessing import Process
+
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from common.models.sharded_outgoing_batcher import ShardedOutgoingBatcher
+from common.utils.heartbeat import HeartBeat
 from common.utils.rabbit_utils import RabbitUtils
-import logging
+
 
 class FilterMatchesController:
-    def __init__(self, rabbit_ip, matches_exchange_name, output_exchange_name, reducers_amount, routing_key, batch_size, match_filter, queue_name):
+    def __init__(self, node_name, rabbit_ip, matches_exchange_name, output_exchange_name, pongs_queue, reducers_amount,
+                 routing_key, batch_size, match_filter, queue_name):
         self.matches_exchange_name = matches_exchange_name
         self.output_exchange_name = output_exchange_name
+        self.pongs_queue = pongs_queue
+        self.node_name = node_name
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
 
+        # Seteo heartbeat para todos
+        self.heartbeat_process = Process(target=self._heartbeat_init, args=(rabbit_ip,))
+
         # input exchange
-        RabbitUtils.setup_input_direct_exchange(self.channel, self.matches_exchange_name, routing_key, self._callback, queue_name)
+        RabbitUtils.setup_input_direct_exchange(self.channel, self.matches_exchange_name, routing_key, self._callback,
+                                                queue_name)
 
         # output exchange
         RabbitUtils.setup_output_direct_exchange(self.channel, self.output_exchange_name)
 
         self.filter = match_filter
-        self.sharded_outgoing_batcher = ShardedOutgoingBatcher(self.channel, reducers_amount, batch_size, output_exchange_name, tkn_key='token')
+        self.sharded_outgoing_batcher = ShardedOutgoingBatcher(self.channel, reducers_amount, batch_size,
+                                                               output_exchange_name, tkn_key='token')
 
     def run(self):
+        self.heartbeat_process.start()
+
         logging.info('FILTER MATCHES: Waiting for messages. To exit press CTRL+C')
         try:
             self.channel.start_consuming()
@@ -42,3 +56,7 @@ class FilterMatchesController:
                 self.sharded_outgoing_batcher.add_to_batch(match)
 
         self.sharded_outgoing_batcher.publish_if_full()
+
+    def _heartbeat_init(self, rabbit_ip):
+        heartbeat = HeartBeat(self.node_name, rabbit_ip, self.pongs_queue)
+        heartbeat.run()

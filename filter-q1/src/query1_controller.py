@@ -1,19 +1,27 @@
+import logging
+from multiprocessing import Process
+
+from src.filter_query1 import FilterQuery1
+
 from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
-from src.filter_query1 import FilterQuery1
-from common.utils.rabbit_utils import RabbitUtils
-import logging
-from common.models.persistor import Persistor
 from common.encoders.match_encoder_decoder import MatchEncoderDecoder
+from common.models.persistor import Persistor
+from common.utils.heartbeat import HeartBeat
+from common.utils.rabbit_utils import RabbitUtils
 
 
 class Query1Controller:
-    def __init__(self, rabbit_ip, matches_exchange_name, output_queue_name, filtered_rows_filename):
+    def __init__(self, rabbit_ip, matches_exchange_name, output_queue_name, pongs_queue, filtered_rows_filename):
         self.matches_exchange_name = matches_exchange_name
         self.output_queue_name = output_queue_name
+        self.pongs_queue = pongs_queue
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(
             rabbit_ip)
+
+        # Seteo heartbeat para todos
+        self.heartbeat_process = Process(target=self._heartbeat_init, args=(rabbit_ip,))
 
         # input exchange
         RabbitUtils.setup_input_fanout_exchange(
@@ -36,8 +44,9 @@ class Query1Controller:
                 self._preprocess(match)
         logging.info(f"FILTER QUERY1: rebuilt set now is {self.filtered_rows}")
 
-
     def run(self):
+        self.heartbeat_process.start()
+
         logging.info('FILTER QUERY1: Waiting for messages. To exit press CTRL+C')
         try:
             self.channel.start_consuming()
@@ -91,6 +100,10 @@ class Query1Controller:
 
         if can_pass:
             self.filtered_rows.add(MatchEncoderDecoder.encode_match_str(match))
+
+    def _heartbeat_init(self, rabbit_ip):
+        heartbeat = HeartBeat("filter-q1", rabbit_ip, self.pongs_queue)
+        heartbeat.run()
 
 # old:
 

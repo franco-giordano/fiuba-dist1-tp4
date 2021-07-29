@@ -1,15 +1,23 @@
+from multiprocessing import Process
+
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from src.batched_filter_ladder import BatchedFilterLadder
+
+from common.utils.heartbeat import HeartBeat
 from common.utils.rabbit_utils import RabbitUtils
 import logging
 
 class LadderFilterController:
-    def __init__(self, rabbit_ip, matches_exchange_name, output_exchange_name, route_1v1, route_team, max_outgoing_sentinels):
+    def __init__(self, rabbit_ip, matches_exchange_name, output_exchange_name, pongs_queue, route_1v1, route_team, max_outgoing_sentinels):
         self.matches_exchange_name = matches_exchange_name
         self.output_exchange_name = output_exchange_name
         self.max_outgoing_sentinels = max_outgoing_sentinels
+        self.pongs_queue = pongs_queue
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
+
+        # Seteo heartbeat para todos
+        self.heartbeat_process = Process(target=self._heartbeat_init, args=(rabbit_ip,))
 
         # input exchange
         RabbitUtils.setup_input_fanout_exchange(self.channel, self.matches_exchange_name, self._callback)
@@ -20,6 +28,8 @@ class LadderFilterController:
         self.batched_filter = BatchedFilterLadder(route_1v1, route_team)
 
     def run(self):
+        self.heartbeat_process.start()
+
         logging.info('FILTER BY LADDER: Waiting for messages. To exit press CTRL+C')
         try:
             self.channel.start_consuming()
@@ -52,3 +62,9 @@ class LadderFilterController:
             # logging.info(f'FILTER BY LADDER: Sending to output exchange matches for route TEAM')
             ser2 = BatchEncoderDecoder.encode_batch(batch_team)
             self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=self.batched_filter.route_team, body=ser2)
+
+    def _heartbeat_init(self, rabbit_ip):
+        heartbeat = HeartBeat("filter-by-ladder", rabbit_ip, self.pongs_queue)
+        heartbeat.run()
+
+

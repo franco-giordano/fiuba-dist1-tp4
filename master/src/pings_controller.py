@@ -1,11 +1,12 @@
-from threading import Thread, Lock
-from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
-from common.utils.rabbit_utils import RabbitUtils
 import logging
-from common.models.persistor import Persistor
-from datetime import datetime
 import subprocess
+from datetime import datetime
+from threading import Thread, Lock
 from time import sleep
+
+from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
+from common.models.persistor import Persistor
+from common.utils.rabbit_utils import RabbitUtils
 
 
 class PingsController:
@@ -68,8 +69,8 @@ class PingsController:
 
             sleep(self.timeout_interval)
 
-    def _pongs_callback(self, ch, method, properties, body): # callback para la cola del pings controller
-        node_name = ObjectEncoderDecoder.decode_bytes(body)
+    def _pongs_callback(self, ch, method, properties, body):  # callback para la cola del pings controller
+        node_name = ObjectEncoderDecoder.decode_bytes(body).strip()
         logging.info(f'PINGS: Recibido {body}')
         if node_name != f"master-{self.my_master_id}":
             self._restart_timer(node_name)
@@ -80,7 +81,8 @@ class PingsController:
         logging.info(
             f'Stopped container {node_name}. Result={result.returncode}. Output={result.stdout}. Error={result.stderr}')
 
-        self.log_persistor.log(f'Restarting container {node_name}. Result={result.returncode}. Output={result.stdout}. Error={result.stderr}')
+        self.log_persistor.log(
+            f'Restarting container {node_name}. Result={result.returncode}. Output={result.stdout}. Error={result.stderr}')
 
         result = subprocess.run(['docker', 'start', node_name],
                                 check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -96,9 +98,9 @@ class PingsController:
                 del self.generations[self.act_generation ^ 1][node_name]
 
     def _gens_init(self):
-        if self.nodes_list == ['']: # empty nodes list
+        if self.nodes_list == ['']:  # empty nodes list
             return
-            
+
         for n in self.nodes_list:
             if n != f"master-{self.my_master_id}":
                 self.generations[self.act_generation][n] = datetime.now()

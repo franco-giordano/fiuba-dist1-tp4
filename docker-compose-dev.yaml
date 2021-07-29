@@ -188,7 +188,7 @@ services:
     networks:
       - testing_net
     volumes:
-      - "./persistance/group-by-nodes-q3:/persistance"
+      - "./persistance/group-by-nodes-q2:/persistance"
 
   group-by-node-q3-0:
     stop_signal: SIGINT

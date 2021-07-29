@@ -71,7 +71,7 @@ class PingsController:
 
     def _pongs_callback(self, ch, method, properties, body):  # callback para la cola del pings controller
         node_name = ObjectEncoderDecoder.decode_bytes(body).strip()
-        logging.info(f'PINGS: Recibido {body}')
+        # logging.info(f'PINGS: Recibido {body}')
         if node_name != f"master-{self.my_master_id}":
             self._restart_timer(node_name)
 

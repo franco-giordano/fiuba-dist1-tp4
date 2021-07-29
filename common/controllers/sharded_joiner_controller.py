@@ -48,13 +48,13 @@ class ShardedJoinerController:
             return
 
         batch = BatchEncoderDecoder.decode_bytes(body)
-        logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Received batch {body[:25]}...')
+        # logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Received batch {body[:25]}...')
 
         if BatchEncoderDecoder.is_players_batch(batch):
             self.matches_joiner.add_players_batch(batch)
-            logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Added players batch {body[:25]}...')
+            # logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Added players batch {body[:25]}...')
         elif BatchEncoderDecoder.is_matches_batch(batch):
             self.matches_joiner.add_matches_batch(batch)
-            logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Added matches batch {body[:25]}...')
+            # logging.info(f'SHARDED JOINER {self.assigned_shard_key}: Added matches batch {body[:25]}...')
 
         RabbitUtils.ack_from_method(self.channel, method)

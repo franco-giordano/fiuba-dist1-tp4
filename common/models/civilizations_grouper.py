@@ -72,22 +72,15 @@ class CivilizationsGrouper:
                 if self._recved_all_fins():
                     self.flush_results()
 
-        else:  # es un dato del dataset
+        else:  # es un dato del dataset = joined_match
             # agrega en mem
-            serialized_data = ObjectEncoderDecoder.encode_obj_str(data)
-            self.data_per_joiner[from_id].add(serialized_data)
+            self.add_joined_match(from_id, data)
 
-            # persisto
-            self._add_player(from_id, data)
-            self.persistors[from_id].persist(data)
-
-    # def add_joined_match(self, joined_match):
-    #     for player in joined_match[1]:
-    #         civ = player['civ']
-    #         prev_val = self.current_civs.get(civ, None)
-    #         self.current_civs[civ] = self.aggregator.add(prev_val, player)
-    #
-    #         self.persistor.persist(json.dumps(player))  # Agrego APPEND
+    def add_joined_match(self, from_id, joined_match):
+        for player in joined_match[1]:
+            self._add_player(from_id, player)
+            serialized_player = ObjectEncoderDecoder.encode_obj_str(player)
+            self.persistors[from_id].persist(serialized_player)
 
     # def recved_all_sentinels(self):
     #     logging.info(f'CIVS GROUPER: Flushing all grouped civs')

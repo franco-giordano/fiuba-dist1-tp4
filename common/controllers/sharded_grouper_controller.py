@@ -36,9 +36,7 @@ class ShardedGrouperController:
 
     def _callback(self, ch, method, properties, body):
         join_msg = BatchEncoderDecoder.decode_bytes(body)
-        logging.info(f'SHARDED GROUPER {self.assigned_shard_key}: Received joined match {body[:25]}...')
-
-        # TODO: hacer INIFIN asi como en el accumulator
+        # logging.info(f'SHARDED GROUPER {self.assigned_shard_key}: Received joined match {body[:25]}...')
 
         self.civ_grouper.recv_msg(join_msg, properties)
 

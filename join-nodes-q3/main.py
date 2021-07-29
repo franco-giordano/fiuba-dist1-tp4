@@ -8,7 +8,6 @@ def main():
                            'OUTPUT_EXCHANGE_NAME': False,
                            'RABBIT_IP': False,
                            'NEXT_REDUCERS_AMOUNT': True,
-                           'TOTAL_INCOMING_SENTINELS': True,
                            'JOINER_ID': True,
                            'SENTINELS_FILE_BASE': False,
                            'PERSISTANCE_FILE_BASE': False})
@@ -35,7 +34,7 @@ def reducer_init(proc_id, config_params):
     shard_exchange_name = config_params['SHARD_EXCHANGE_NAME']
     output_exchange_name = config_params['OUTPUT_EXCHANGE_NAME']
     next_reducers_amount = config_params['NEXT_REDUCERS_AMOUNT']
-    total_incoming_sentinels = config_params['TOTAL_INCOMING_SENTINELS']
+    total_incoming_sentinels = 2 # config_params['TOTAL_INCOMING_SENTINELS']
     persistance_file = f'{config_params["PERSISTANCE_FILE_BASE"]}{proc_id}'
     sentinels_file = f'{config_params["SENTINELS_FILE_BASE"]}{proc_id}'
 

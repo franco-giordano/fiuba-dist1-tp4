@@ -22,7 +22,7 @@ class ShardedOutgoingBatcher:
         for shard_key in list(self.all_outgoing_batches):
             batch = self.all_outgoing_batches[shard_key]
             if len(batch) >= self.max_batch_size:
-                logging.info(f'SHARD EXCHANGE: Announcing batch for shard key {shard_key}')
+                # logging.info(f'SHARD EXCHANGE: Announcing batch for shard key {shard_key}')
                 serialized = BatchEncoderDecoder.encode_batch(batch)
                 self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=shard_key, body=serialized)
                 del self.all_outgoing_batches[shard_key]
@@ -42,3 +42,5 @@ class ShardedOutgoingBatcher:
             if batch:
                 serialized = BatchEncoderDecoder.encode_batch(batch)
                 self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=shard_key, body=serialized)
+
+        self.all_outgoing_batches = {}

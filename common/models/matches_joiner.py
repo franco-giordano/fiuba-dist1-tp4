@@ -52,28 +52,6 @@ class MatchesJoiner:
         self.current_matches[tkn] = joined_info
         self.persistor.persist(json.dumps(match))
 
-        # En algun momento aca hay que mandar el INICIO, pero no tengo idea cuando es el primer mensaje con esta logica
-
-
-    # def _send_or_store(self, joined_info, token):
-    #     if self._should_send(joined_info):
-            
-    #         shard_key = self.shard_key_getter.get_key_for_str(token)
-    #         serialized = BatchEncoderDecoder.encode_batch(joined_info)
-    #         logging.info(f'MATCHES JOINER: Found join for match {joined_info}, sending to shard key {shard_key}')
-    #         self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=shard_key, body=serialized)
-    #         self._remove_info_if_possible(token)
-    #     else:
-    #         self.current_matches[token] = joined_info
-
-    #         self.persistor.persist(json.dumps(joined_info)) # TODO: Preguntar bien como guarda franco las cosas aca.
-
-    # def _remove_info_if_possible(self, token):
-    #     if not self.force_send_on_first_join:
-    #         del self.current_matches[token]
-    #     else:
-    #         self.current_matches[token][1] = [] # reset match players
-
     def add_matches_batch(self, batch):
         for m in batch:
             self._add_match(m)
@@ -88,21 +66,6 @@ class MatchesJoiner:
 
     def received_sentinel(self):
         self.flush_results()
-        # logging.info(f'MATCHES JOINER: Propagating sentinel to group-by nodes...')
-        # sentinel = BatchEncoderDecoder.create_encoded_sentinel()
-        # all_keys = self.shard_key_getter.generate_all_shard_keys()
-        # for key in all_keys:
-        #     # TODO: preguntar que es esto, no se que hacen las shard keys aca
-        #     self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=f"FIN {self.id_joiner}")
-
-        #     self.persistor.persist("FINISH")
-        #     self.persistor.wipe()
-            # self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=sentinel)
-
-    # def _broadcast_msg(self, msg):
-    #     all_keys = self.shard_key_getter.generate_all_shard_keys()
-    #     for key in all_keys:
-    #         self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=key, body=msg)
 
     def flush_results(self):
         self._broadcast_inicio()
@@ -112,7 +75,7 @@ class MatchesJoiner:
             if self._should_send(joined_match): # solo mandarlo si se joineo algo
                 shard_key = self.shard_key_getter.get_key_for_str(tkn)
                 serialized = BatchEncoderDecoder.encode_batch(joined_match)
-                logging.info(f'MATCHES JOINER: Found join for match {joined_match}, sending to shard key {shard_key}')
+                # logging.info(f'MATCHES JOINER: Found join for match {joined_match}, sending to shard key {shard_key}')
                 self.channel.basic_publish(exchange=self.output_exchange_name,
                     routing_key=shard_key, body=serialized, properties=props)
 

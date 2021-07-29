@@ -30,25 +30,25 @@ class LadderFilterController:
 
     def _callback(self, ch, method, properties, body):
         if BatchEncoderDecoder.is_encoded_sentinel(body):
-            logging.info(f"FILTER BY LADDER: Received sentinel! Propagating and shutting down...")
+            logging.info(f"FILTER BY LADDER: Received sentinel! Propagating")
             for i in range(self.max_outgoing_sentinels):
                 self.channel.basic_publish(exchange=self.output_exchange_name, \
                     routing_key=self.batched_filter.route_1v1, body=body)
                 self.channel.basic_publish(exchange=self.output_exchange_name, \
                     routing_key=self.batched_filter.route_team, body=body)
-            # TODO: shutdown my node
-            raise KeyboardInterrupt
+            # raise KeyboardInterrupt
+            return
 
         batch = BatchEncoderDecoder.decode_bytes(body)
-        logging.info(f"FILTER BY LADDER: Received batch {body[:25]}...")
+        # logging.info(f"FILTER BY LADDER: Received batch {body[:25]}...")
 
         batch_1v1, batch_team = self.batched_filter.create_filtered_batches(batch)
 
         if batch_1v1:
-            logging.info(f'FILTER BY LADDER: Sending to output exchange matches for route 1v1')
+            # logging.info(f'FILTER BY LADDER: Sending to output exchange matches for route 1v1')
             ser1 = BatchEncoderDecoder.encode_batch(batch_1v1)
             self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=self.batched_filter.route_1v1, body=ser1)
         if batch_team:
-            logging.info(f'FILTER BY LADDER: Sending to output exchange matches for route TEAM')
+            # logging.info(f'FILTER BY LADDER: Sending to output exchange matches for route TEAM')
             ser2 = BatchEncoderDecoder.encode_batch(batch_team)
             self.channel.basic_publish(exchange=self.output_exchange_name, routing_key=self.batched_filter.route_team, body=ser2)

@@ -31,7 +31,8 @@ class ShardedGrouperController:
         if BatchEncoderDecoder.is_encoded_sentinel(body):
             logging.info(f"Q2 GROUPER {self.assigned_shard_key}: Received sentinel! Flushing and shutting down...")
             self.matches_grouper.received_sentinel()
-            raise KeyboardInterrupt
+            # raise KeyboardInterrupt
+            return
 
         batch = BatchEncoderDecoder.decode_bytes(body)
         logging.info(f'Q2 GROUPER {self.assigned_shard_key}: Received batch {body[:25]}...')

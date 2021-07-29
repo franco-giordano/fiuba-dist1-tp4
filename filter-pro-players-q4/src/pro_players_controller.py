@@ -33,7 +33,8 @@ class ProPlayersController:
         if BatchEncoderDecoder.is_encoded_sentinel(body):
             logging.info(f"FILTER PRO PLAYERS: Received sentinel! Shutting down...")
             self.sharded_outgoing_batcher.received_sentinel()
-            raise KeyboardInterrupt
+            # raise KeyboardInterrupt
+            return
 
         batch = BatchEncoderDecoder.decode_bytes(body)
 

@@ -32,7 +32,8 @@ class FilterMatchesController:
         if BatchEncoderDecoder.is_encoded_sentinel(body):
             logging.info(f"FILTER MATCHES: Received sentinel! Shutting down...")
             self.sharded_outgoing_batcher.received_sentinel()
-            raise KeyboardInterrupt
+            # raise KeyboardInterrupt
+            return
 
         batch = BatchEncoderDecoder.decode_bytes(body)
 

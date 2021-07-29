@@ -76,6 +76,18 @@ services:
     networks:
       - testing_net
 
+  exchanger-q4:
+    stop_signal: SIGINT
+    container_name: exchanger-q4
+    image: exchanger:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q4
+      - NEXT_REDUCERS_AMOUNT=1
+    networks:
+      - testing_net
+
   filter-by-ladder:
     stop_signal: SIGINT
     container_name: filter-by-ladder
@@ -90,6 +102,19 @@ services:
     stop_signal: SIGINT
     container_name: filter-matches-q3
     image: filter-matches-q3:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - filter-by-ladder
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NEXT_REDUCERS_AMOUNT=1
+    networks:
+      - testing_net
+
+  filter-matches-q4:
+    stop_signal: SIGINT
+    container_name: filter-matches-q4
+    image: filter-matches-q4:latest
     entrypoint: python3 /main.py
     depends_on:
       - filter-by-ladder
@@ -145,7 +170,54 @@ services:
       - testing_net
     volumes:
       - ./persistance/accumulator-q3:/persistance
-    
+
+  join-node-q4-0:
+    stop_signal: SIGINT
+    container_name: join-node-q4-0
+    image: join-nodes-q4:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - filter-matches-q4
+    environment:
+      - PYTHONUNBUFFERED=1
+      - JOINER_ID=0
+      - NEXT_REDUCERS_AMOUNT=1
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/join-nodes-q4:/persistance"
+
+
+  group-by-node-q4-0:
+    stop_signal: SIGINT
+    container_name: group-by-node-q4-0
+    image: group-by-nodes-q4:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - join-node-q4-0
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TOTAL_INCOMING_SENTINELS=1
+      - GROUPER_ID=0
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/group-by-nodes-q4:/persistance"
+      
+  final-accumulator-q4:
+    stop_signal: SIGINT
+    container_name: final-accumulator-q4
+    image: final-accumulator-q4:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - group-by-node-q4-0
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TOTAL_INCOMING_SENTINELS=1
+    networks:
+      - testing_net
+    volumes:
+      - ./persistance/accumulator-q4:/persistance
 
 networks:
   testing_net:

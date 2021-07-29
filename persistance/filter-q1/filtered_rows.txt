@@ -1,2 +1,0 @@
-{"token": "FBRdtKo3LN4jKu7r", "winning_team": 1, "mirror": false, "ladder": "RM_TEAM", "patch": 39515, "average_rating": 2108, "map": "megarandom", "map_size": "medium", "num_players": 4, "server": "eastus", "duration": 21210, "row_number": 4244}
-CHECK

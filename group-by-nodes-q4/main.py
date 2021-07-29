@@ -10,7 +10,8 @@ def main():
                            'RABBIT_IP': False,
                            'REDUCERS_AMOUNT': True,
                            'GROUPER_ID': True,
-                           'TOTAL_INCOMING_SENTINELS': True})
+                           'TOTAL_INCOMING_SENTINELS': True,
+                           'PERSISTANCE_FILENAME': False})
 
     my_id = config_params['GROUPER_ID']
 

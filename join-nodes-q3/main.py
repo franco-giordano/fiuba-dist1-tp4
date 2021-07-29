@@ -14,21 +14,6 @@ def main():
     my_id = config_params['JOINER_ID']
     reducer_init(my_id, config_params)
 
-
-# reducers_proc = []
-
-# for i in range(reducers_amount):
-# 	pr = Process(target=reducer_init, args=(i, config_params))
-# 	reducers_proc.append(pr)
-# 	pr.start()
-
-# _initialize_log(str(-99))
-# logging.info(f'@MAIN: ############ WAITING...')
-
-# for p in reducers_proc:
-# 	p.join()
-# 	logging.info(f'@MAIN: ############ PROCESS NUMBER {p} FINISHED!')
-
 def reducer_init(proc_id, config_params):
     rabbit_ip = config_params['RABBIT_IP']
     shard_exchange_name = config_params['SHARD_EXCHANGE_NAME']

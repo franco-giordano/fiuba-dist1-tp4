@@ -5,33 +5,251 @@ docker-compose -f docker-compose-dev.yaml down
 make[1]: Leaving directory '/home/frank/Documents/GitProjects/fiuba-dist1-tp4'
 make[1]: Entering directory '/home/frank/Documents/GitProjects/fiuba-dist1-tp4'
 docker build -f ./client-manager/Dockerfile -t "client-manager:latest" .
-Sending build context to Docker daemon  410.4MB
+Sending build context to Docker daemon  410.5MB
 Step 1/4 : FROM rabbitmq-python-base:0.0.1
  ---> c816ce5cd6d1
 Step 2/4 : COPY common /common
  ---> Using cache
- ---> 6a8e8229d4da
+ ---> e980f7155c12
 Step 3/4 : COPY client-manager /
  ---> Using cache
- ---> 09cb866ace1c
+ ---> 8fc4d31ada72
 Step 4/4 : CMD ["python3", "./main.py"]
  ---> Using cache
- ---> 26cbdf9d217d
-Successfully built 26cbdf9d217d
+ ---> fd02f037aa94
+Successfully built fd02f037aa94
 Successfully tagged client-manager:latest
 docker build -f ./filter-q1/Dockerfile -t "filter-q1:latest" .
-Sending build context to Docker daemon  410.4MB
+Sending build context to Docker daemon  410.5MB
 Step 1/4 : FROM rabbitmq-python-base:0.0.1
  ---> c816ce5cd6d1
 Step 2/4 : COPY common /common
  ---> Using cache
- ---> 6a8e8229d4da
+ ---> e980f7155c12
 Step 3/4 : COPY filter-q1 /
  ---> Using cache
- ---> 5c892b23817b
+ ---> aaae1dc51116
 Step 4/4 : CMD ["python", "./main.py"]
  ---> Using cache
- ---> 31e94268255f
-Successfully built 31e94268255f
+ ---> d40512ab2f3e
+Successfully built d40512ab2f3e
 Successfully tagged filter-q1:latest
 docker build -f ./exchanger/Dockerfile -t "exchanger:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY exchanger /
+ ---> Using cache
+ ---> 88a2a0332d6a
+Step 4/4 : CMD ["python3", "./main.py"]
+ ---> Using cache
+ ---> fa4bd8313eb4
+Successfully built fa4bd8313eb4
+Successfully tagged exchanger:latest
+docker build -f ./filter-by-ladder/Dockerfile -t "filter-by-ladder:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY filter-by-ladder /
+ ---> Using cache
+ ---> eb981c676c9c
+Step 4/4 : CMD ["python", "./main.py"]
+ ---> Using cache
+ ---> 97b181cbcbf0
+Successfully built 97b181cbcbf0
+Successfully tagged filter-by-ladder:latest
+docker build -f ./filter-matches-q3/Dockerfile -t "filter-matches-q3:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY filter-matches-q3 /
+ ---> Using cache
+ ---> 2aa3a431a0a8
+Step 4/4 : CMD ["python", "./main.py"]
+ ---> Using cache
+ ---> 26b8fcc04991
+Successfully built 26b8fcc04991
+Successfully tagged filter-matches-q3:latest
+docker build -f ./filter-pro-players-q4/Dockerfile -t "filter-pro-players-q4:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY filter-pro-players-q4 /
+ ---> Using cache
+ ---> 8d5a900e1cfa
+Step 4/4 : CMD ["python", "./main.py"]
+ ---> Using cache
+ ---> 1b81c2c07c6e
+Successfully built 1b81c2c07c6e
+Successfully tagged filter-pro-players-q4:latest
+docker build -f ./join-nodes-q3/Dockerfile -t "join-nodes-q3:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY join-nodes-q3 /
+ ---> Using cache
+ ---> 180b4cdcaf96
+Step 4/4 : CMD ["python3", "./main.py"]
+ ---> Using cache
+ ---> f3ec0114c19d
+Successfully built f3ec0114c19d
+Successfully tagged join-nodes-q3:latest
+docker build -f ./group-by-nodes-q3/Dockerfile -t "group-by-nodes-q3:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY group-by-nodes-q3 /
+ ---> Using cache
+ ---> affbf22898af
+Step 4/4 : CMD ["python3", "./main.py"]
+ ---> Using cache
+ ---> e596c8f1dd64
+Successfully built e596c8f1dd64
+Successfully tagged group-by-nodes-q3:latest
+docker build -f ./filter-matches-q4/Dockerfile -t "filter-matches-q4:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY filter-matches-q4 /
+ ---> Using cache
+ ---> 3c44b4e3a17d
+Step 4/4 : CMD ["python", "./main.py"]
+ ---> Using cache
+ ---> 66a948e1d153
+Successfully built 66a948e1d153
+Successfully tagged filter-matches-q4:latest
+docker build -f ./join-nodes-q4/Dockerfile -t "join-nodes-q4:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY join-nodes-q4 /
+ ---> Using cache
+ ---> 44cb8338d322
+Step 4/4 : CMD ["python3", "./main.py"]
+ ---> Using cache
+ ---> f2ec1f44c5f6
+Successfully built f2ec1f44c5f6
+Successfully tagged join-nodes-q4:latest
+docker build -f ./group-by-nodes-q4/Dockerfile -t "group-by-nodes-q4:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY group-by-nodes-q4 /
+ ---> 3e32cacfa4a2
+Step 4/4 : CMD ["python3", "./main.py"]
+ ---> Running in 3ca2d5a290fc
+Removing intermediate container 3ca2d5a290fc
+ ---> fddb07a3f4ee
+Successfully built fddb07a3f4ee
+Successfully tagged group-by-nodes-q4:latest
+docker build -f ./final-accumulator-q3/Dockerfile -t "final-accumulator-q3:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY final-accumulator-q3 /
+ ---> Using cache
+ ---> d00928a32796
+Step 4/4 : CMD ["python", "./main.py"]
+ ---> Using cache
+ ---> 03c940097691
+Successfully built 03c940097691
+Successfully tagged final-accumulator-q3:latest
+docker build -f ./final-accumulator-q4/Dockerfile -t "final-accumulator-q4:latest" .
+Sending build context to Docker daemon  410.5MB
+Step 1/4 : FROM rabbitmq-python-base:0.0.1
+ ---> c816ce5cd6d1
+Step 2/4 : COPY common /common
+ ---> Using cache
+ ---> e980f7155c12
+Step 3/4 : COPY final-accumulator-q4 /
+ ---> Using cache
+ ---> 5eefc69a3e5a
+Step 4/4 : CMD ["python", "./main.py"]
+ ---> Using cache
+ ---> e7e4ab5056e5
+Successfully built e7e4ab5056e5
+Successfully tagged final-accumulator-q4:latest
+# docker build -f ./group-by-nodes-q2/Dockerfile -t "group-by-nodes-q2:latest" .
+# docker build -f ./master/Dockerfile -t "master:latest" .
+docker-compose -f docker-compose-dev.yaml up -d --build
+make[1]: Leaving directory '/home/frank/Documents/GitProjects/fiuba-dist1-tp4'
+make[1]: Entering directory '/home/frank/Documents/GitProjects/fiuba-dist1-tp4'
+docker-compose -f docker-compose-dev.yaml logs -f
+Attaching to final-accumulator-q3, final-accumulator-q4, group-by-node-q3-0, group-by-node-q4-0, join-node-q3-0, join-node-q4-0, filter-matches-q3, filter-matches-q4, exchanger-q4, client-manager, filter-by-ladder, exchanger-q3, filter-q1
+[36mclient-manager          |[0m 2021-07-29 04:12:47 INFO     CLIMANAGER: Waiting for messages. To exit press CTRL+C
+[33mexchanger-q3            |[0m 2021-07-29 04:12:47 INFO     SHARD EXCHANGE: Waiting for messages. To exit press CTRL+C
+[32mexchanger-q4            |[0m 2021-07-29 04:12:47 INFO     SHARD EXCHANGE: Waiting for messages. To exit press CTRL+C
+[36;1mfilter-matches-q4       |[0m 2021-07-29 04:12:48 INFO     FILTER MATCHES: Waiting for messages. To exit press CTRL+C
+[34mfilter-matches-q3       |[0m 2021-07-29 04:12:48 INFO     FILTER MATCHES: Waiting for messages. To exit press CTRL+C
+[35mfilter-by-ladder        |[0m 2021-07-29 04:12:47 INFO     FILTER BY LADDER: Waiting for messages. To exit press CTRL+C
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:12:50 INFO     ACCUMULATOR: Waiting for messages. To exit press CTRL+C
+[33;1mfilter-q1               |[0m 2021-07-29 04:12:47 INFO     FILTER QUERY1: rebuilt set now is set()
+[33;1mfilter-q1               |[0m 2021-07-29 04:12:47 INFO     FILTER QUERY1: Waiting for messages. To exit press CTRL+C
+[34;1mgroup-by-node-q3-0      |[0m 2021-07-29 04:12:49 INFO     SHARDED GROUPER 0: Waiting for messages. To exit press CTRL+C
+[36mgroup-by-node-q4-0      |[0m 2021-07-29 04:12:49 INFO     SHARDED GROUPER 0: Waiting for messages. To exit press CTRL+C
+[33mjoin-node-q3-0          |[0m 2021-07-29 04:12:48 INFO     SHARDED JOINER 0: Waiting for messages. To exit press CTRL+C
+[35;1mfinal-accumulator-q4    |[0m 2021-07-29 04:12:50 INFO     ACCUMULATOR: Waiting for messages. To exit press CTRL+C
+[32mjoin-node-q4-0          |[0m 2021-07-29 04:12:48 INFO     SHARDED JOINER 0: Waiting for messages. To exit press CTRL+C
+[36mclient-manager          |[0m 2021-07-29 04:13:05 INFO     Estado del sistema: FREE
+[33;1mfilter-q1               |[0m 2021-07-29 04:13:08 INFO     FILTER QUERY1: set now is {'{"token": "FBRdtKo3LN4jKu7r", "winning_team": 1, "mirror": false, "ladder": "RM_TEAM", "patch": 39515, "average_rating": 2108, "map": "megarandom", "map_size": "medium", "num_players": 4, "server": "eastus", "duration": 21210, "row_number": 4244}'}
+[33mexchanger-q3            |[0m 2021-07-29 04:13:11 INFO     SHARD EXCHANGE: Flushing all batches...
+[33mexchanger-q3            |[0m 2021-07-29 04:13:11 INFO     SHARD EXCHANGE: Sending sentinels to all shards...
+[33;1mfilter-q1               |[0m 2021-07-29 04:13:12 INFO     FILTER QUERY1: Received sentinel! Shutting down...
+[32mexchanger-q4            |[0m 2021-07-29 04:13:12 INFO     SHARD EXCHANGE: Flushing all batches...
+[32mexchanger-q4            |[0m 2021-07-29 04:13:12 INFO     SHARD EXCHANGE: Sending sentinels to all shards...
+[34mfilter-matches-q3       |[0m 2021-07-29 04:13:12 INFO     FILTER MATCHES: Received sentinel! Shutting down...
+[34mfilter-matches-q3       |[0m 2021-07-29 04:13:12 INFO     SHARD EXCHANGE: Flushing all batches...
+[34mfilter-matches-q3       |[0m 2021-07-29 04:13:12 INFO     SHARD EXCHANGE: Sending sentinels to all shards...
+[35mfilter-by-ladder        |[0m 2021-07-29 04:13:12 INFO     FILTER BY LADDER: Received sentinel! Propagating
+[36;1mfilter-matches-q4       |[0m 2021-07-29 04:13:12 INFO     FILTER MATCHES: Received sentinel! Shutting down...
+[36;1mfilter-matches-q4       |[0m 2021-07-29 04:13:12 INFO     SHARD EXCHANGE: Flushing all batches...
+[36;1mfilter-matches-q4       |[0m 2021-07-29 04:13:12 INFO     SHARD EXCHANGE: Sending sentinels to all shards...
+[33mjoin-node-q3-0          |[0m 2021-07-29 04:13:12 INFO     SHARDED JOINER 0: Received one sentinel!
+[33mjoin-node-q3-0          |[0m 2021-07-29 04:13:12 INFO     SHARDED JOINER 0: Received one sentinel!
+[33mjoin-node-q3-0          |[0m 2021-07-29 04:13:12 INFO     SHARDED JOINER 0: Received all sentinels! Flushing and shutting down...
+[34;1mgroup-by-node-q3-0      |[0m 2021-07-29 04:13:12 INFO     CIVS GROUPER: Announcing for civ Incas the results [1, 1]
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     ACCUMULATOR: Received data b'{"msg": "[[INICIO]]"}'...
+[34;1mgroup-by-node-q3-0      |[0m 2021-07-29 04:13:12 INFO     CIVS GROUPER: Announcing for civ Khmer the results [1, 1]
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     ACCUMULATOR: Received data b'["Incas", [1, 1]]'...
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     ACCUMULATOR: Received data b'["Khmer", [1, 1]]'...
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     ACCUMULATOR: Received data b'{"msg": "[[FIN]]"}'...
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     PERCENTAGE ACCUMULATOR: Received partial count for civ Khmer data [1, 1]
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     PERCENTAGE ACCUMULATOR: Received partial count for civ Incas data [1, 1]
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     PERCENTAGE ACCUMULATOR: Sending result b'["Khmer", 1.0]'
+[32;1mfinal-accumulator-q3    |[0m 2021-07-29 04:13:12 INFO     PERCENTAGE ACCUMULATOR: Sending result b'["Incas", 1.0]'
+[32mjoin-node-q4-0          |[0m 2021-07-29 04:13:13 INFO     SHARDED JOINER 0: Received one sentinel!
+[32mjoin-node-q4-0          |[0m 2021-07-29 04:13:13 INFO     SHARDED JOINER 0: Received one sentinel!
+[32mjoin-node-q4-0          |[0m 2021-07-29 04:13:13 INFO     SHARDED JOINER 0: Received all sentinels! Flushing and shutting down...
+[35;1mfinal-accumulator-q4    |[0m 2021-07-29 04:13:13 INFO     ACCUMULATOR: Received data b'{"msg": "[[INICIO]]"}'...
+[35;1mfinal-accumulator-q4    |[0m 2021-07-29 04:13:13 INFO     ACCUMULATOR: Received data b'{"msg": "[[FIN]]"}'...
+[35;1mfinal-accumulator-q4    |[0m 2021-07-29 04:13:13 INFO     TOP 5 ACCUMULATOR: Found top 5 civs []

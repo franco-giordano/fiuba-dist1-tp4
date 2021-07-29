@@ -169,7 +169,7 @@ class MasterController:
         """
         # IF LIDER VIVO
         if event["type"] == "[[LEADER_ALIVE]]":
-            assert (event["id"] == self.current_leader)
+            # assert (event["id"] == self.current_leader)
 
             #  reseteo el timer del lider
             self.internal_monitor.reset_leader_timer()

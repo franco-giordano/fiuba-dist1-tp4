@@ -1,11 +1,13 @@
-from threading import Thread, Lock
-from common.utils.master_utils import MasterUtils
-from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
-from time import sleep
 import logging
 from datetime import datetime
+from threading import Thread, Lock
+from time import sleep
+
+from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
+from common.utils.master_utils import MasterUtils
 
 TIMEOUT_LEADER = 5
+
 
 # pingscontroller + heartbeat.py pero para monitoreo de lider, no de nodos
 
@@ -14,8 +16,8 @@ class InternalMonitor:
     def __init__(self, rabbit_ip, leader_dead_callback,
                  my_master_id, master_comms_exchange, masters_amount):
 
-        self.heartbeat_sender_thread = None # Thread(target=self._heartbeat_loop)
-        self.leader_monitor_thread = None # Thread(
+        self.heartbeat_sender_thread = None  # Thread(target=self._heartbeat_loop)
+        self.leader_monitor_thread = None  # Thread(
         #     target=self._leader_monitor, args=(leader_dead_callback,))
         self.rabbit_ip = rabbit_ip
 
@@ -84,13 +86,13 @@ class InternalMonitor:
                     break
 
     def _heartbeat_loop(self):
-        conn, channel =  MasterUtils.setup_connection_with_channel(self.rabbit_ip)
+        conn, channel = MasterUtils.setup_connection_with_channel(self.rabbit_ip)
 
         heartbeat_body = ObjectEncoderDecoder.encode_obj(
             {"type": "[[LEADER_ALIVE]]", "id": self.my_master_id})
         while self.keep_going:
             MasterUtils.send_to_all_masters(channel, self.master_comms_exchange,
-                                        self.my_master_id, heartbeat_body, self.masters_amount)
+                                            self.my_master_id, heartbeat_body, self.masters_amount)
 
             sleep(1.5)
 

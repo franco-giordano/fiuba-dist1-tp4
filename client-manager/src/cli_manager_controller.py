@@ -2,7 +2,9 @@ import logging
 
 from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
 from common.models.persistor import Persistor
+from common.utils.heartbeat import HeartBeat
 from common.utils.rabbit_utils import RabbitUtils
+from multiprocessing import Process
 
 
 # Protocolo de cli manager
@@ -18,19 +20,24 @@ from common.utils.rabbit_utils import RabbitUtils
 # (Usar reply_to para no tener una unica cola de vuelta)
 
 class CliManagerController:
-    def __init__(self, rabbit_ip, requests_queue_name, sys_status_filename):
+    def __init__(self, rabbit_ip, requests_queue_name, pongs_queue, sys_status_filename):
         self.requests_queue_name = requests_queue_name
 
         self.NOTIFY_SYS_IDLE_MSG = "NOTIFY_SYS_IDLE"
 
         self.persistor_state = Persistor(sys_status_filename)
         self.system_state = self.reload_persisted_state()  # (container_name | 'FREE')
+        self.pongs_queue = pongs_queue
+
+        # Seteo heartbeat para todos
+        self.heartbeat_process = Process(target=self._heartbeat_init, args=(rabbit_ip,))
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
         # setup input queue
         RabbitUtils.setup_input_queue(self.channel, self.requests_queue_name, self._callback, auto_ack=False)
 
     def run(self):
+        self.heartbeat_process.start()
 
         logging.info('CLIMANAGER: Waiting for messages. To exit press CTRL+C')
         try:
@@ -76,3 +83,7 @@ class CliManagerController:
         else:
             # assert(len(persisted_state) == 2)
             return persisted_state[0].strip()
+
+    def _heartbeat_init(self, rabbit_ip):
+        heartbeat = HeartBeat("client-manager", rabbit_ip, self.pongs_queue)
+        heartbeat.run()

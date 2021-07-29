@@ -1,43 +1,43 @@
 version: '3'
 services:
-  # master-0:
-  #   stop_signal: SIGINT
-  #   container_name: master-0
-  #   image: master:latest
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - MY_MASTER_ID=0
-  #   networks:
-  #     - testing_net
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ./persistance/master/events.log:/persistance/events.log
-  
-  # master-1:
-  #   stop_signal: SIGINT
-  #   container_name: master-1
-  #   image: master:latest
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - MY_MASTER_ID=1
-  #   networks:
-  #     - testing_net
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ./persistance/master/events.log:/persistance/events.log
+  master-0:
+    stop_signal: SIGINT
+    container_name: master-0
+    image: master:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MY_MASTER_ID=0
+    networks:
+      - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./persistance/master/events.log:/persistance/events.log
 
-  # master-2:
-  #   stop_signal: SIGINT
-  #   container_name: master-2
-  #   image: master:latest
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - MY_MASTER_ID=2
-  #   networks:
-  #     - testing_net
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ./persistance/master/events.log:/persistance/events.log
+  master-1:
+    stop_signal: SIGINT
+    container_name: master-1
+    image: master:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MY_MASTER_ID=1
+    networks:
+      - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./persistance/master/events.log:/persistance/events.log
+
+  master-2:
+    stop_signal: SIGINT
+    container_name: master-2
+    image: master:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MY_MASTER_ID=2
+    networks:
+      - testing_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./persistance/master/events.log:/persistance/events.log
 
   client-manager:
     stop_signal: SIGINT
@@ -64,30 +64,6 @@ services:
     volumes:
       - ./persistance/filter-q1:/persistance
 
-  exchanger-q3:
-    stop_signal: SIGINT
-    container_name: exchanger-q3
-    image: exchanger:latest
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q3
-      - NEXT_REDUCERS_AMOUNT=1
-    networks:
-      - testing_net
-
-  exchanger-q4:
-    stop_signal: SIGINT
-    container_name: exchanger-q4
-    image: exchanger:latest
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q4
-      - NEXT_REDUCERS_AMOUNT=1
-    networks:
-      - testing_net
-
   filter-by-ladder:
     stop_signal: SIGINT
     container_name: filter-by-ladder
@@ -95,6 +71,7 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - NODE_NAME=filter-by-ladder
     networks:
       - testing_net
 
@@ -108,6 +85,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - NEXT_REDUCERS_AMOUNT=1
+      - NODE_NAME=filter-matches-q3
     networks:
       - testing_net
 
@@ -121,6 +99,46 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - NEXT_REDUCERS_AMOUNT=1
+      - NODE_NAME=filter-matches-q4
+    networks:
+      - testing_net
+
+  exchanger-q2:
+    stop_signal: SIGINT
+    container_name: exchanger-q2
+    image: exchanger:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q2
+      - NEXT_REDUCERS_AMOUNT=1
+      - NODE_NAME=exchanger-q2
+    networks:
+      - testing_net
+
+  exchanger-q3:
+    stop_signal: SIGINT
+    container_name: exchanger-q3
+    image: exchanger:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q3
+      - NEXT_REDUCERS_AMOUNT=1
+      - NODE_NAME=exchanger-q3
+    networks:
+      - testing_net
+
+  exchanger-q4:
+    stop_signal: SIGINT
+    container_name: exchanger-q4
+    image: exchanger:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q4
+      - NEXT_REDUCERS_AMOUNT=1
+      - NODE_NAME=exchanger-q4
     networks:
       - testing_net
 
@@ -135,41 +153,11 @@ services:
       - PYTHONUNBUFFERED=1
       - JOINER_ID=0
       - NEXT_REDUCERS_AMOUNT=1
+      - NODE_NAME=join-node-q3-0
     networks:
       - testing_net
     volumes:
       - "./persistance/join-nodes-q3:/persistance"
-
-  group-by-node-q3-0:
-    stop_signal: SIGINT
-    container_name: group-by-node-q3-0
-    image: group-by-nodes-q3:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - join-node-q3-0
-    environment:
-      - PYTHONUNBUFFERED=1
-      - TOTAL_INCOMING_SENTINELS=1
-      - GROUPER_ID=0
-    networks:
-      - testing_net
-    volumes:
-      - "./persistance/group-by-nodes-q3:/persistance"
-
-  final-accumulator-q3:
-    stop_signal: SIGINT
-    container_name: final-accumulator-q3
-    image: final-accumulator-q3:latest
-    entrypoint: python3 /main.py
-    depends_on:
-      - group-by-node-q3-0
-    environment:
-      - PYTHONUNBUFFERED=1
-      - TOTAL_INCOMING_SENTINELS=1
-    networks:
-      - testing_net
-    volumes:
-      - ./persistance/accumulator-q3:/persistance
 
   join-node-q4-0:
     stop_signal: SIGINT
@@ -182,11 +170,42 @@ services:
       - PYTHONUNBUFFERED=1
       - JOINER_ID=0
       - NEXT_REDUCERS_AMOUNT=1
+      - NODE_NAME=join-node-q4-0
     networks:
       - testing_net
     volumes:
       - "./persistance/join-nodes-q4:/persistance"
 
+  group-by-node-q2-0:
+    stop_signal: SIGINT
+    container_name: group-by-node-q2-0
+    image: group-by-nodes-q2:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GROUPER_ID=0
+      - NODE_NAME=group-by-node-q2-0
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/group-by-nodes-q2:/persistance"
+
+  group-by-node-q3-0:
+    stop_signal: SIGINT
+    container_name: group-by-node-q3-0
+    image: group-by-nodes-q3:latest
+    entrypoint: python3 /main.py
+    depends_on:
+      - join-node-q3-0
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TOTAL_INCOMING_SENTINELS=1
+      - GROUPER_ID=0
+      - NODE_NAME=group-by-node-q3-0
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/group-by-nodes-q3:/persistance"
 
   group-by-node-q4-0:
     stop_signal: SIGINT
@@ -199,51 +218,41 @@ services:
       - PYTHONUNBUFFERED=1
       - TOTAL_INCOMING_SENTINELS=1
       - GROUPER_ID=0
+      - NODE_NAME=group-by-node-q4-0
     networks:
       - testing_net
     volumes:
       - "./persistance/group-by-nodes-q4:/persistance"
-      
+
+  final-accumulator-q3:
+    stop_signal: SIGINT
+    container_name: final-accumulator-q3
+    image: final-accumulator-q3:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TOTAL_INCOMING_SENTINELS=1
+      - NODE_NAME=final-accumulator-q3
+    networks:
+      - testing_net
+    volumes:
+      - ./persistance/accumulator-q3:/persistance
+
   final-accumulator-q4:
     stop_signal: SIGINT
     container_name: final-accumulator-q4
     image: final-accumulator-q4:latest
     entrypoint: python3 /main.py
-    depends_on:
-      - group-by-node-q4-0
     environment:
       - PYTHONUNBUFFERED=1
       - TOTAL_INCOMING_SENTINELS=1
+      - NODE_NAME=final-accumulator-q4
     networks:
       - testing_net
     volumes:
       - ./persistance/accumulator-q4:/persistance
 
 
-  group-by-node-q2-0:
-    stop_signal: SIGINT
-    container_name: group-by-node-q2-0
-    image: group-by-nodes-q2:latest
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-      - GROUPER_ID=0
-    networks:
-      - testing_net
-    volumes:
-      - "./persistance/group-by-nodes-q3:/persistance"
-
-  exchanger-q2:
-    stop_signal: SIGINT
-    container_name: exchanger-q2
-    image: exchanger:latest
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q2
-      - NEXT_REDUCERS_AMOUNT=1
-    networks:
-      - testing_net
 
 networks:
   testing_net:

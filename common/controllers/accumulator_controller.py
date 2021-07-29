@@ -1,15 +1,24 @@
-from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
-from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
-from common.utils.rabbit_utils import RabbitUtils
-from common.models.persistor import Persistor
 import logging
+from multiprocessing import Process
+
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
+from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
+from common.models.persistor import Persistor
+from common.utils.heartbeat import HeartBeat
+from common.utils.rabbit_utils import RabbitUtils
 
 
 class AccumulatorController:
-    def __init__(self, rabbit_ip, input_queue_name, output_queue_name, groupers_amount, accumulator):
+    def __init__(self, node_name, rabbit_ip, input_queue_name, output_queue_name, pongs_queue, groupers_amount,
+                 accumulator):
         self.input_queue_name = input_queue_name
         self.output_queue_name = output_queue_name
         self.groupers_amount = groupers_amount
+        self.node_name = node_name
+        self.pongs_queue = pongs_queue
+
+        # Seteo heartbeat para todos
+        self.heartbeat_process = Process(target=self._heartbeat_init, args=(rabbit_ip,))
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(
             rabbit_ip)
@@ -37,6 +46,8 @@ class AccumulatorController:
         # si llega algo sin transicion me quedo en el mismo state
 
     def run(self):
+        self.heartbeat_process.start()
+
         logging.info('ACCUMULATOR: Waiting for messages. To exit press CTRL+C')
         try:
             self._reload_persisted_state()
@@ -80,7 +91,7 @@ class AccumulatorController:
                     self._reset_variables()
                     self._wipe_persistance()
 
-        else:   # es un dato del dataset
+        else:  # es un dato del dataset
             # agrega en mem
             serialized_data = ObjectEncoderDecoder.encode_obj_str(data)
             self.data_per_grouper[from_id].add(serialized_data)
@@ -113,7 +124,7 @@ class AccumulatorController:
                 elif msg_type == 'FIN':
                     if self.grouper_state_machine[from_id] == 'RECVING_ROWS':
                         self.grouper_state_machine[from_id] = 'FIN_RECVED'
-                else:   # es un dato del dataset
+                else:  # es un dato del dataset
                     self.data_per_grouper[from_id].add(msg_type)
 
         if self._recved_all_fins():
@@ -136,3 +147,7 @@ class AccumulatorController:
     def _wipe_persistance(self):
         for persistor in self.persistors.values():
             persistor.wipe()
+
+    def _heartbeat_init(self, rabbit_ip):
+        heartbeat = HeartBeat(self.node_name, rabbit_ip, self.pongs_queue)
+        heartbeat.run()

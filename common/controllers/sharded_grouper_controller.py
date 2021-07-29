@@ -1,20 +1,26 @@
 import logging
+from multiprocessing import Process
 
 from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
 from common.models.civilizations_grouper import CivilizationsGrouper
 from common.models.sentinel_tracker import SentinelTracker
+from common.utils.heartbeat import HeartBeat
 from common.utils.rabbit_utils import RabbitUtils
 
 
 class ShardedGrouperController:
-    def __init__(self, rabbit_ip, shard_exchange_name, output_queue_name, assigned_shard_key, aggregator,
+    def __init__(self, node_name, rabbit_ip, shard_exchange_name, output_queue_name, pongs_queue, assigned_shard_key, aggregator,
                  joiners_amount, persistance_filename):
+        self.node_name = node_name
+        self.pongs_queue = pongs_queue
         self.shard_exchange_name = shard_exchange_name
         self.assigned_shard_key = assigned_shard_key
         self.joiners_amount = joiners_amount
 
-        self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
+        # Seteo heartbeat para todos
+        self.heartbeat_process = Process(target=self._heartbeat_init, args=(rabbit_ip,))
 
+        self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
         # setup input exchange
         RabbitUtils.setup_input_direct_exchange(self.channel, self.shard_exchange_name,
                                                 assigned_shard_key, self._callback, queue_name=None, auto_ack=False)
@@ -26,6 +32,8 @@ class ShardedGrouperController:
                                                 self.joiners_amount, persistance_filename)
 
     def run(self):
+        self.heartbeat_process.start()
+
         logging.info(f'SHARDED GROUPER {self.assigned_shard_key}: Waiting for messages. To exit press CTRL+C')
         try:
             self.channel.start_consuming()
@@ -43,6 +51,9 @@ class ShardedGrouperController:
         # ACK a cola de input
         RabbitUtils.ack_from_method(self.channel, method)
 
+    def _heartbeat_init(self, rabbit_ip):
+        heartbeat = HeartBeat(self.node_name, rabbit_ip, self.pongs_queue)
+        heartbeat.run()
 
 """
 [APPEND id_fila_1, CHECK, APPEND id_fila_2, CHECK, APPEND id_fila_2]

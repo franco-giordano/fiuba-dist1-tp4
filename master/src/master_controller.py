@@ -1,15 +1,17 @@
-from common.utils.heartbeat import HeartBeat
+import logging
 import os
 import signal
-import logging
-from common.utils.master_utils import MasterUtils
-from src.pings_controller import PingsController
-from src.internal_monitor import InternalMonitor
-from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
-from multiprocessing import Process
 from datetime import datetime
-from time import sleep
+from multiprocessing import Process
 from threading import Thread, Lock
+from time import sleep
+
+from src.internal_monitor import InternalMonitor
+from src.pings_controller import PingsController
+
+from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
+from common.utils.heartbeat import HeartBeat
+from common.utils.master_utils import MasterUtils
 
 TIMEOUT_ELECTION = 4
 TIMEOUT_COORDINATOR = 12
@@ -29,28 +31,23 @@ class MasterController:
 
         self.election_timer = None  # None: No hay elección transurriendo
         self.election_timer_lock = Lock()
-        self.election_timer_check_thread = Thread(
-            target=self.election_timer_check)
+        self.election_timer_check_thread = Thread(target=self.election_timer_check)
 
         # None: No estoy esperando un msj [[CCORD]]
         self.coordinator_timer = None
         self.coordinator_timer_lock = Lock()
-        self.coordinator_timer_check_thread = Thread(
-            target=self.coordinator_timer_check)
+        self.coordinator_timer_check_thread = Thread(target=self.coordinator_timer_check)
 
-        self.connection, self.channel = MasterUtils.setup_connection_with_channel(
-            rabbit_ip)
+        self.connection, self.channel = MasterUtils.setup_connection_with_channel(rabbit_ip)
 
-        self.internal_monitor = InternalMonitor(
-            rabbit_ip, self.celebrate_election, self.my_master_id,
-            self.master_comms_exchange, self.masters_amount)
+        self.internal_monitor = InternalMonitor(rabbit_ip, self.celebrate_election, self.my_master_id,
+                                                self.master_comms_exchange, self.masters_amount)
 
         # Seteo heartbeat para todos
         self.heartbeat_process = Process(target=self._heartbeat_init, args=(rabbit_ip,))
 
         # comms exchange with other masters
-        MasterUtils.setup_master_comms(
-            self.channel, master_comms_exchange, my_master_id, self._comms_callback)
+        MasterUtils.setup_master_comms(self.channel, master_comms_exchange, my_master_id, self._comms_callback)
 
         self.pings_process = None
 
@@ -92,26 +89,26 @@ class MasterController:
             with self.election_timer_lock:
                 if self.election_timer is not None:
                     elapsed_seconds = (
-                        datetime.now() - self.election_timer).seconds
+                            datetime.now() - self.election_timer).seconds
                     if elapsed_seconds > TIMEOUT_ELECTION:
                         logging.info(f'MASTER: Salto election_timer! Declarandome como nuevo lider')
                         self._election_time_up()
                         self.election_timer = None  # turn off timer
 
-            sleep(TIMEOUT_ELECTION/2)
+            sleep(TIMEOUT_ELECTION / 2)
 
     def coordinator_timer_check(self):
         while True:
             with self.coordinator_timer_lock:
                 if self.coordinator_timer is not None:
                     elapsed_seconds = (
-                        datetime.now() - self.coordinator_timer).seconds
+                            datetime.now() - self.coordinator_timer).seconds
                     if elapsed_seconds > TIMEOUT_COORDINATOR:
                         logging.info(f'MASTER: Salto coordinator_timer! Iniciando una nueva eleccion')
                         self._forward_election()
-                        self.coordinator_timer = None # turn off timer
+                        self.coordinator_timer = None  # turn off timer
 
-            sleep(TIMEOUT_COORDINATOR/2)  # 2 segundos
+            sleep(TIMEOUT_COORDINATOR / 2)  # 2 segundos
 
     def _comms_callback(self, ch, method, properties, body):
         event = ObjectEncoderDecoder.decode_bytes(body)
@@ -119,23 +116,24 @@ class MasterController:
 
         # IF ELECTION: Respondo OK, forwardeo a nodos mas grandes, sigo escuchando
         if event["type"] == "[[ELECTION]]":
-            assert(event["id"] < self.my_master_id)
+            assert (event["id"] < self.my_master_id)
             MasterUtils.send_alive_bully_msg(
                 self.channel, self.master_comms_exchange, self.my_master_id, event["id"])
 
             if self.am_i_leader():
                 # os.kill(self.pings_process.pid, signal.SIGINT) OBSOLETO (creo)
                 # decirle que yo soy el lider, que no flashe confianza
-                MasterUtils.send_one_coordinator_msg(self.channel, self.master_comms_exchange, self.my_master_id, event["id"])
+                MasterUtils.send_one_coordinator_msg(self.channel, self.master_comms_exchange, self.my_master_id,
+                                                     event["id"])
                 return
-            else:   # soy slave, sigo buscando mi lider uwu
+            else:  # soy slave, sigo buscando mi lider uwu
                 self._forward_election()
 
         # IF ALIVE: Sigo consumiendo, hasta esperar el mensaje coordinator, ya no voy a ser el lider
         if event["type"] == "[[ALIVE]]":
             logging.info(f"MASTER: recibo [[ALIVE]] desde {event['id']} siendo {self.my_master_id}")
             if self.am_i_leader():
-                assert(event["id"] < self.my_master_id)
+                assert (event["id"] < self.my_master_id)
                 # No voy a estar monitoreando heartbeats durante la elección
                 os.kill(self.pings_process.pid, signal.SIGINT)
             with self.election_timer_lock:
@@ -148,7 +146,7 @@ class MasterController:
         #  y empiezo a monitorear al lider
         if event["type"] == "[[COORDINATOR]]":
             new_leader = event["id"]
-            assert(new_leader > self.my_master_id)
+            assert (new_leader > self.my_master_id)
             if self.am_i_leader():
                 os.kill(self.pings_process.pid, signal.SIGINT)
 
@@ -156,7 +154,7 @@ class MasterController:
 
             with self.election_timer_lock:
                 self.election_timer = None
-            
+
             with self.coordinator_timer_lock:
                 self.coordinator_timer = None
             self.internal_monitor.start_monitoring_leader()
@@ -171,11 +169,10 @@ class MasterController:
         """
         # IF LIDER VIVO
         if event["type"] == "[[LEADER_ALIVE]]":
-            assert(event["id"] == self.current_leader)
+            assert (event["id"] == self.current_leader)
 
             #  reseteo el timer del lider
             self.internal_monitor.reset_leader_timer()
-
 
     def _election_time_up(self):
         """ Se invoca cuando envio [[ELECTION]] y no recibo respuesta, significa que soy el coordinator """
@@ -183,8 +180,8 @@ class MasterController:
         self._declare_my_leadership()
 
     def pings_init(self):
-        controller = PingsController(
-            self.rabbit_ip, self.my_master_id, self.pongs_queue, self.nodes_list, self.log_filename)
+        controller = PingsController(self.rabbit_ip, self.my_master_id, self.pongs_queue, self.nodes_list,
+                                     self.log_filename)
         controller.run()
 
     def _forward_election(self):

@@ -20,7 +20,7 @@ docker-image:
 	docker build -f ./final-accumulator-q3/Dockerfile -t "final-accumulator-q3:latest" .
 	docker build -f ./final-accumulator-q4/Dockerfile -t "final-accumulator-q4:latest" .
 	docker build -f ./group-by-nodes-q2/Dockerfile -t "group-by-nodes-q2:latest" .
-	# docker build -f ./master/Dockerfile -t "master:latest" .
+	docker build -f ./master/Dockerfile -t "master:latest" .
 .PHONY: docker-image
 
 rabbit-up:
@@ -28,7 +28,7 @@ rabbit-up:
 .PHONY: rabbit-up
 
 rabbit-down:
-	docker-compose -f docker-compose-rabbit.yaml stop -t 10
+	docker-compose -f docker-compose-rabbit.yaml stop -t 5
 	docker-compose -f docker-compose-rabbit.yaml down
 .PHONY: rabbit-down
 
@@ -41,7 +41,7 @@ nodes-up: docker-image
 .PHONY: nodes-up
 
 nodes-down:
-	docker-compose -f docker-compose-dev.yaml stop -t 10
+	docker-compose -f docker-compose-dev.yaml stop -t 5
 	docker-compose -f docker-compose-dev.yaml down
 .PHONY: nodes-down
 

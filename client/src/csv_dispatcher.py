@@ -1,13 +1,13 @@
-import logging
 import csv
-from multiprocessing import Process
-from common.encoders.player_encoder_decoder import PlayerEncoderDecoder
-from common.encoders.match_encoder_decoder import MatchEncoderDecoder
-from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
-from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
-from common.utils.rabbit_utils import RabbitUtils
+import logging
 import uuid
-import pika
+from multiprocessing import Process
+
+from common.encoders.api_pkts_encoder_decoder import ApiPacketsEncoder
+from common.encoders.batch_encoder_decoder import BatchEncoderDecoder
+from common.encoders.match_encoder_decoder import MatchEncoderDecoder
+from common.encoders.player_encoder_decoder import PlayerEncoderDecoder
+from common.utils.rabbit_utils import RabbitUtils
 
 
 class CSVDispatcher:
@@ -22,9 +22,9 @@ class CSVDispatcher:
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(self.rabbit_ip)
         self.request_queue_name = "aoe2-requests"
         RabbitUtils.setup_queue(self.channel, self.request_queue_name)
-        
+
         self.callback_queue = RabbitUtils.setup_anonym_input_queue(self.channel, self.on_response)
-        
+
         self.matches_proc = Process(target=self.upload_csv, args=(matches_path, matches_fanout, MatchEncoderDecoder))
         self.players_proc = Process(target=self.upload_csv, args=(players_path, players_fanout, PlayerEncoderDecoder))
 
@@ -38,11 +38,16 @@ class CSVDispatcher:
         self.channel.start_consuming()
 
         if self.able_to_upload:
+            logging.info("El sistema se encuentra disponible, procedo a enviar los datasets")
             self.matches_proc.start()
             self.players_proc.start()
 
             self.matches_proc.join()
             self.players_proc.join()
+        else:
+            logging.info("El sistema se encuentra ocupado, intente mas tarde")
+
+        return self.able_to_upload
 
     def on_response(self, ch, method, props, body):
         logging.info(f"Recibo respuesta {body}")
@@ -55,7 +60,7 @@ class CSVDispatcher:
 
         logging.info(f"Puedo subir: {self.able_to_upload}")
         self.channel.stop_consuming()
-            
+
     def upload_csv(self, csv_path, fanout_name, decoder):
         logging.info(f'{fanout_name}: Arranco a mandar')
         connection, channel = RabbitUtils.setup_connection_with_channel(self.rabbit_ip)
@@ -80,8 +85,8 @@ class CSVDispatcher:
                     batch = []
                     count = 0
                     # time.sleep(5)
-                
-                row_number += 1 # Id unico por fila
+
+                row_number += 1  # Id unico por fila
 
             if count > 0:
                 serialized = BatchEncoderDecoder.encode_batch(batch)
@@ -92,5 +97,10 @@ class CSVDispatcher:
         sentinel_batch = BatchEncoderDecoder.create_encoded_sentinel()
         channel.basic_publish(exchange=fanout_name, routing_key='', body=sentinel_batch)
 
-
         connection.close()
+
+    def finished_proccessing(self):
+        logging.info(f"Notifico al cli-manager que el sistema ya se encuentra libre")
+        request_msg = ApiPacketsEncoder.create_idle_sys_pkt(self.client_id)
+        RabbitUtils.send_to_queue(self.channel, self.request_queue_name, request_msg, self.corr_id, self.callback_queue)
+        self.connection.close()

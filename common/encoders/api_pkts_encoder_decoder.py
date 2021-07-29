@@ -1,5 +1,6 @@
 from common.encoders.obj_encoder_decoder import ObjectEncoderDecoder
 
+
 class ApiPacketsEncoder:
     @staticmethod
     def _encode_pkt(pkt):
@@ -19,7 +20,7 @@ class ApiPacketsEncoder:
 
     @classmethod
     def create_request_pkt(cls, node_name):
-        return cls._encode_pkt({'id': node_name})
+        return cls._encode_pkt({'id': node_name, 'msg': 'REQUESTING_SYSTEM'})
 
     @classmethod
     def is_control_pkt(cls, decoded_pkt):
@@ -32,3 +33,7 @@ class ApiPacketsEncoder:
     @classmethod
     def create_fin_pkt(cls):
         return cls._encode_pkt({'msg': '[[FIN]]'})
+
+    @classmethod
+    def create_idle_sys_pkt(cls, node_name):
+        return cls._encode_pkt({'id': node_name, 'msg': 'NOTIFY_SYS_IDLE'})

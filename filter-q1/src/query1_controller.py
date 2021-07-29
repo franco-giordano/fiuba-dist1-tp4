@@ -83,7 +83,7 @@ class Query1Controller:
                     MatchEncoderDecoder.encode_match_str(match))
 
                 # ack
-        
+
         RabbitUtils.ack_from_method(self.channel, method)
 
     def _preprocess(self, match):

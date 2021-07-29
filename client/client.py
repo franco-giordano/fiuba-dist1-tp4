@@ -1,7 +1,8 @@
+from multiprocessing import Process
+
 from common.utils.config_setup import setup
 from src.csv_dispatcher import CSVDispatcher
 from src.results_controller import ResultsController
-from multiprocessing import Process
 
 
 def main():
@@ -20,7 +21,7 @@ def main():
     matches_path = config_params['MATCHES_PATH']
     players_queue = config_params['INPUT_PLAYERS_QUEUE']
     players_path = config_params['PLAYERS_PATH']
-    batch_size = 1 # config_params['BATCH_SIZE']
+    batch_size = 1  # config_params['BATCH_SIZE']
 
     dispatcher = CSVDispatcher(node_id, rabbit_ip, matches_queue,
                                matches_path, players_queue, players_path, batch_size)
@@ -28,13 +29,18 @@ def main():
     results_controllers = [Process(target=results_init, args=(
         config_params, i)) for i in range(1, 5)]
 
+    able_to_upload = dispatcher.run()
+
+    if not able_to_upload:
+        return  # No tengo que esperar respuesta ni notificar que el sistema esta libre, porque yo no lo pude usar
+
     for handler in results_controllers:
         handler.start()
 
-    dispatcher.run()
-
     for handler in results_controllers:
         handler.join()
+
+    dispatcher.finished_proccessing()
 
 
 def results_init(config_params, controller_index):

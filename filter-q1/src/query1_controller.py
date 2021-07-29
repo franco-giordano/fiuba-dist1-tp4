@@ -63,9 +63,10 @@ class Query1Controller:
             self.channel.basic_publish(
                 exchange='', routing_key=self.output_queue_name, body=end_msg)
 
+            self.persistor.wipe()
+
             RabbitUtils.ack_from_method(self.channel, method)
             return
-            # TODO: WIPE del archivo de persistencia
 
         batch = BatchEncoderDecoder.decode_bytes(body)
         passing = list(filter(self.filter.should_pass, batch))

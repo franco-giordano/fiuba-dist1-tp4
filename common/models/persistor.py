@@ -1,11 +1,13 @@
 import logging
+import os
 
 class Persistor:
     CHECK_GUARD = "CHECK\n"
 
     def __init__(self, file_name):
         self.file_name = file_name
-        
+        with open(file_name, 'a+') as f: pass # Crea el archivo si no existe
+       
     def persist(self, text):
         with open(self.file_name, "a") as f:
             f.write(f"{text}\n")

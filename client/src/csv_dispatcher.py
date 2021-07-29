@@ -48,12 +48,16 @@ class CSVDispatcher:
         logging.info(f"Recibo respuesta {body}")
         if self.corr_id == props.correlation_id:
             reply = ApiPacketsEncoder.decode_bytes(body)['msg']
+            logging.info(f"recibi decodeado {reply}")
             if reply == "OK_TO_UPLOAD":
+                logging.info(f"recibo ok to upload y pasa el corr id")
                 self.able_to_upload = True
 
-        ch.stop_consuming()         
+        logging.info(f"Puedo subir: {self.able_to_upload}")
+        self.channel.stop_consuming()
             
     def upload_csv(self, csv_path, fanout_name, decoder):
+        logging.info(f'{fanout_name}: Arranco a mandar')
         connection, channel = RabbitUtils.setup_connection_with_channel(self.rabbit_ip)
         RabbitUtils.setup_fanout_exchange(channel, fanout_name)
         row_number = 1
@@ -62,6 +66,7 @@ class CSVDispatcher:
             reader = csv.DictReader(csvf)
             batch = []
             count = 0
+            logging.info(f'{fanout_name}: Abri archivo')
             for row_dict in reader:
                 parsed_dict = decoder.parse_dict(row_dict)
                 parsed_dict["row_number"] = row_number

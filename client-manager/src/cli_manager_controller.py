@@ -21,11 +21,10 @@ class CliManagerController:
         self.system_state = self.reload_persisted_state() # (container_name | 'FREE')
 
         self.connection, self.channel = RabbitUtils.setup_connection_with_channel(rabbit_ip)
-        RabbitUtils.setup_queue(self.channel, self.requests_queue_name)
-
-    def run(self):
         # setup input queue
         RabbitUtils.setup_input_queue(self.channel, self.requests_queue_name, self.on_request, auto_ack=False)
+
+    def run(self):
 
         logging.info('CLIMANAGER: Waiting for messages. To exit press CTRL+C')
         try:
@@ -47,7 +46,7 @@ class CliManagerController:
             self.system_state = request_client_id
             self.persistor_state.update(request_client_id)
 
-        RabbitUtils.send_to_queue(ch, props.reply_to, reply_msg, props.correlation_id)
+        RabbitUtils.send_to_queue(ch, props.reply_to, reply_msg, corr_id=props.correlation_id)
         RabbitUtils.ack_from_method(self.channel, method)
 
     def reload_persisted_state(self):

@@ -36,7 +36,8 @@ class ResultsController:
         return results_set
 
     def _callback(self, ch, method, properties, body):       
-        control_pkg = ApiPacketsEncoder.decode_bytes(body).get('msg', None)
+        data_recvd = ApiPacketsEncoder.decode_bytes(body)
+        control_pkg = data_recvd.get('msg', None) if type(data_recvd) is dict else None
         logging.info(f"RESULTS: Received batch, writing result '{method.routing_key}, {body}\n'")
 
         if control_pkg == "[[INICIO]]":

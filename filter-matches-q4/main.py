@@ -10,21 +10,11 @@ def main():
 		'RABBIT_IP': False,
 		'NEXT_REDUCERS_AMOUNT': True,
 		'TEAM_ROUTING_KEY': False,
-		'WORKERS_AMOUNT': True,
 		'WORKERS_SHARED_QUEUE': False})
-	workers_amount = config_params['WORKERS_AMOUNT']
 
-	workers_proc = []
+	worker_init(config_params)
 
-	for i in range(workers_amount):
-		pr = Process(target=worker_init, args=(i, config_params))
-		workers_proc.append(pr)
-		pr.start()
-
-	for p in workers_proc:
-		p.join()
-
-def worker_init(proc_id, config_params):
+def worker_init(config_params):
 	rabbit_ip = config_params['RABBIT_IP']
 	matches_exchange_name = config_params['MATCHES_BY_LADDER_EXCHANGE_NAME']
 	output_exchange_name = config_params['OUTPUT_EXCHANGE_NAME']

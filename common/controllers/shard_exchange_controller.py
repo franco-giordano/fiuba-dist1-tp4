@@ -28,12 +28,13 @@ class ShardExchangeController:
 
     def _callback(self, ch, method, properties, body):
         if BatchEncoderDecoder.is_encoded_sentinel(body):
-            logging.info(f"SHARD EXCHANGE: Received sentinel! Propagating and shutting down...")
+            # logging.info(f"SHARD EXCHANGE: Received sentinel! Propagating and shutting down...")
             self.sharded_outgoing_batcher.received_sentinel()
-            raise KeyboardInterrupt
+            # raise KeyboardInterrupt
+            return
 
         batch = BatchEncoderDecoder.decode_bytes(body)
-        logging.info(f"SHARD EXCHANGE: Received batch {body[:25]}...")
+        # logging.info(f"SHARD EXCHANGE: Received batch {body[:25]}...")
 
         for player in batch:
             self.sharded_outgoing_batcher.add_to_batch(player)

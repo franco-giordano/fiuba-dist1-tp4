@@ -64,7 +64,7 @@ class RabbitUtils:
     @staticmethod
     def send_to_queue(channel, queue_name, body, corr_id=None, reply_queue=None, headers=None):
         props = None
-        if corr_id and reply_queue:
+        if corr_id:
             props=pika.BasicProperties(correlation_id = corr_id, reply_to=reply_queue)
         elif headers:
             props=pika.BasicProperties(headers=headers)

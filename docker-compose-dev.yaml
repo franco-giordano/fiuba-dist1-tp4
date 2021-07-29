@@ -219,6 +219,32 @@ services:
     volumes:
       - ./persistance/accumulator-q4:/persistance
 
+
+  group-by-node-q2-0:
+    stop_signal: SIGINT
+    container_name: group-by-node-q2-0
+    image: group-by-nodes-q2:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GROUPER_ID=0
+    networks:
+      - testing_net
+    volumes:
+      - "./persistance/group-by-nodes-q3:/persistance"
+
+  exchanger-q2:
+    stop_signal: SIGINT
+    container_name: exchanger-q2
+    image: exchanger:latest
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OUTPUT_EXCHANGE_NAME=sharded-by-match-q2
+      - NEXT_REDUCERS_AMOUNT=1
+    networks:
+      - testing_net
+
 networks:
   testing_net:
     ipam:

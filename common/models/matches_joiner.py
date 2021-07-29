@@ -82,6 +82,7 @@ class MatchesJoiner:
         self.persistor.persist("FINISH")
         self._broadcast_fin()
 
+        self.current_matches = {}
         self.persistor.wipe()
     
     def _broadcast_inicio(self):
